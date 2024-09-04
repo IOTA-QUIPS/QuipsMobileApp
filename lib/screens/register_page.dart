@@ -1,6 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:quipsapp/services/auth_service.dart';
 
-class RegisterPage extends StatelessWidget {
+class RegisterPage extends StatefulWidget {
+  @override
+  _RegisterPageState createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final AuthService _authService = AuthService();
+  bool _isLoading = false;
+  String _errorMessage = '';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,8 +37,9 @@ class RegisterPage extends StatelessWidget {
               ),
               SizedBox(height: 20),
               TextFormField(
+                controller: _firstNameController,
                 decoration: InputDecoration(
-                  hintText: 'Full Name',
+                  hintText: 'First Name',
                   prefixIcon: Icon(Icons.person),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
@@ -33,6 +48,18 @@ class RegisterPage extends StatelessWidget {
               ),
               SizedBox(height: 20),
               TextFormField(
+                controller: _lastNameController,
+                decoration: InputDecoration(
+                  hintText: 'Last Name',
+                  prefixIcon: Icon(Icons.person_outline),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+              TextFormField(
+                controller: _usernameController,
                 decoration: InputDecoration(
                   hintText: 'Email',
                   prefixIcon: Icon(Icons.email),
@@ -43,6 +70,7 @@ class RegisterPage extends StatelessWidget {
               ),
               SizedBox(height: 20),
               TextFormField(
+                controller: _passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
                   hintText: 'Password',
@@ -53,9 +81,35 @@ class RegisterPage extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  // Acción de registro
+              _isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : ElevatedButton(
+                onPressed: () async {
+                  setState(() {
+                    _isLoading = true;
+                    _errorMessage = '';
+                  });
+
+                  String? errorMessage = await _authService.register(
+                    _usernameController.text,
+                    _passwordController.text,
+                    _firstNameController.text,
+                    _lastNameController.text,
+                  );
+
+                  setState(() {
+                    _isLoading = false;
+                  });
+
+                  if (errorMessage == null) {
+                    // Registro exitoso, redirige al login
+                    Navigator.pushReplacementNamed(context, '/login');
+                  } else {
+                    // Fallo en el registro, muestra el mensaje de error
+                    setState(() {
+                      _errorMessage = errorMessage;
+                    });
+                  }
                 },
                 child: Text('Register'),
                 style: ElevatedButton.styleFrom(
@@ -66,6 +120,13 @@ class RegisterPage extends StatelessWidget {
                   ),
                 ),
               ),
+              SizedBox(height: 20),
+              if (_errorMessage.isNotEmpty)
+                Text(
+                  _errorMessage,
+                  style: TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
               SizedBox(height: 20),
               TextButton(
                 onPressed: () {

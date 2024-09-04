@@ -8,7 +8,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Banking App'),
+        title: Text('Quips App'),
         backgroundColor: Colors.blueAccent,
         actions: [
           IconButton(
