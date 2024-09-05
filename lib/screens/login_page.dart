@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quipsapp/services/auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -82,9 +83,13 @@ class _LoginPageState extends State<LoginPage> {
                       _errorMessage = response['error'];
                     });
                   } else if (response != null && response.containsKey('token')) {
-                    // Si el login es exitoso, navega a la pantalla principal con el token
+                    // Si el login es exitoso, guarda el token en SharedPreferences
                     final token = response['token'];
-                    Navigator.pushReplacementNamed(context, '/home', arguments: token);
+                    SharedPreferences prefs = await SharedPreferences.getInstance();
+                    await prefs.setString('jwtToken', token);
+
+                    // Navega a la pantalla principal con el token
+                    Navigator.pushReplacementNamed(context, '/home');
                   }
                 },
                 child: Text('Login'),

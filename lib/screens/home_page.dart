@@ -1,8 +1,47 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:quipsapp/services/auth_service.dart';
 
-class HomePage extends StatelessWidget {
-  final String userName = "John Doe"; // Nombre de usuario de ejemplo
-  final double balance = 2500.50; // Balance de ejemplo
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  String userName = "Loading...";
+  double balance = 0.0;
+  final AuthService _authService = AuthService(); // Instancia de AuthService
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('jwtToken');
+
+    if (token != null) {
+      // Llamada a AuthService para obtener los datos del usuario
+      final response = await _authService.getUserInfo(token);
+
+      if (response != null && !response.containsKey('error')) {
+        setState(() {
+          userName = response['firstName'] + " " + response['lastName'];
+          // Verificar si 'balance' es nulo, en cuyo caso asignar un valor predeterminado (por ejemplo, 0.0)
+          // Acceder al campo 'coins' dentro de 'wallet' y asignarlo al balance
+          balance = response['wallet'] != null ? response['wallet']['coins'].toDouble() : 0.0;
+        });
+      } else {
+        // Manejar error
+        print('Error al cargar los datos del usuario');
+      }
+    } else {
+      // Si no hay token, redirigir al login
+      Navigator.pushReplacementNamed(context, '/login');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,8 +103,10 @@ class HomePage extends StatelessWidget {
             ListTile(
               leading: Icon(Icons.logout),
               title: Text('Log Out'),
-              onTap: () {
-                // Acción para cerrar sesión
+              onTap: () async {
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                await prefs.remove('jwtToken');
+                Navigator.pushReplacementNamed(context, '/login');
               },
             ),
           ],
