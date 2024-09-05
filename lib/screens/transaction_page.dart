@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quipsapp/services/transaction_service.dart';
 
 class TransactionPage extends StatefulWidget {
   @override
@@ -6,15 +7,18 @@ class TransactionPage extends StatefulWidget {
 }
 
 class _TransactionPageState extends State<TransactionPage> {
-  final List<String> contacts = ["Alice", "Bob", "Charlie"]; // Ejemplo de contactos
-  String? selectedContact;
-  double? amount;
+  final TextEditingController _receiverAccountController = TextEditingController();
+  final TextEditingController _amountController = TextEditingController();
+  final TransactionService _transactionService = TransactionService();
+  bool _isLoading = false;
+  String _errorMessage = '';
+  String _successMessage = '';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Select Contact and Amount'),
+        title: Text('Make a Transaction'),
         backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
@@ -22,27 +26,18 @@ class _TransactionPageState extends State<TransactionPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            DropdownButtonFormField<String>(
+            TextFormField(
+              controller: _receiverAccountController,
               decoration: InputDecoration(
-                labelText: 'Select Contact',
+                labelText: 'Receiver Account Number',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
-              items: contacts.map((String contact) {
-                return DropdownMenuItem<String>(
-                  value: contact,
-                  child: Text(contact),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  selectedContact = value;
-                });
-              },
             ),
             SizedBox(height: 20),
             TextFormField(
+              controller: _amountController,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
                 labelText: 'Amount',
@@ -50,25 +45,57 @@ class _TransactionPageState extends State<TransactionPage> {
                   borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
-              onChanged: (value) {
-                setState(() {
-                  amount = double.tryParse(value);
-                });
-              },
             ),
             SizedBox(height: 40),
-            ElevatedButton(
-              onPressed: selectedContact != null && amount != null
-                  ? () {
-                Navigator.pushNamed(context, '/confirmation');
-              }
-                  : null,
-              child: Text('Continue'),
+            _isLoading
+                ? Center(child: CircularProgressIndicator())
+                : ElevatedButton(
+              onPressed: () async {
+                setState(() {
+                  _isLoading = true;
+                  _errorMessage = '';
+                  _successMessage = '';
+                });
+
+                // Enviar la transacción
+                final response = await _transactionService.makeTransaction(
+                  'sender_account_number',  // Obtén el número de cuenta del usuario logueado
+                  _receiverAccountController.text,
+                  double.parse(_amountController.text),
+                );
+
+                setState(() {
+                  _isLoading = false;
+                });
+
+                if (response != null && response.containsKey('error')) {
+                  setState(() {
+                    _errorMessage = response['error'];
+                  });
+                } else {
+                  setState(() {
+                    _successMessage = 'Transaction successful';
+                  });
+                }
+              },
+              child: Text('Make Transaction'),
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.symmetric(vertical: 16.0),
                 textStyle: TextStyle(fontSize: 18),
               ),
             ),
+            if (_errorMessage.isNotEmpty)
+              Text(
+                _errorMessage,
+                style: TextStyle(color: Colors.red),
+                textAlign: TextAlign.center,
+              ),
+            if (_successMessage.isNotEmpty)
+              Text(
+                _successMessage,
+                style: TextStyle(color: Colors.green),
+                textAlign: TextAlign.center,
+              ),
           ],
         ),
       ),
