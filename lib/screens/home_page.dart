@@ -29,8 +29,6 @@ class _HomePageState extends State<HomePage> {
       if (response != null && !response.containsKey('error')) {
         setState(() {
           userName = response['firstName'] + " " + response['lastName'];
-          // Verificar si 'balance' es nulo, en cuyo caso asignar un valor predeterminado (por ejemplo, 0.0)
-          // Acceder al campo 'coins' dentro de 'wallet' y asignarlo al balance
           balance = response['wallet'] != null ? response['wallet']['coins'].toDouble() : 0.0;
         });
       } else {
@@ -100,6 +98,14 @@ class _HomePageState extends State<HomePage> {
                 Navigator.pushNamed(context, '/support');
               },
             ),
+            // Cambiar para que navegue a ContactListPage
+            ListTile(
+              leading: Icon(Icons.chat),
+              title: Text('Chat'),
+              onTap: () {
+                Navigator.pushNamed(context, '/contacts');  // Ir a la lista de contactos
+              },
+            ),
             ListTile(
               leading: Icon(Icons.logout),
               title: Text('Log Out'),
@@ -136,6 +142,18 @@ class _HomePageState extends State<HomePage> {
                 Navigator.pushNamed(context, '/transaction');
               },
               child: Text('Make a Transaction'),
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(vertical: 16.0),
+                textStyle: TextStyle(fontSize: 18),
+              ),
+            ),
+            SizedBox(height: 20),
+            // Botón que ahora lleva a ContactListPage
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/contacts');  // Navegar a ContactListPage
+              },
+              child: Text('Go to Contacts'),
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.symmetric(vertical: 16.0),
                 textStyle: TextStyle(fontSize: 18),
