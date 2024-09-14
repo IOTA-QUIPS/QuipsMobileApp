@@ -23,8 +23,8 @@ class TransactionService {
           'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode({
-          'senderAccountNumber': senderAccountNumber,
-          'receiverAccountNumber': receiverAccountNumber,
+          'senderPhoneNumber': senderAccountNumber,
+          'receiverPhoneNumber': receiverAccountNumber,
           'amount': amount,
         }),
       );

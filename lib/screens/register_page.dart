@@ -11,16 +11,31 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneNumberController = TextEditingController();
   final AuthService _authService = AuthService();
   bool _isLoading = false;
   String _errorMessage = '';
+
+  String _selectedCountryCode = '+51'; // Código por defecto (Perú)
+
+  // Lista de códigos de país
+  final List<Map<String, String>> _countryCodes = [
+    {'name': 'Perú', 'code': '+51'},
+    {'name': 'Colombia', 'code': '+57'},
+    {'name': 'Chile', 'code': '+56'},
+    {'name': 'Argentina', 'code': '+54'},
+    {'name': 'USA', 'code': '+1'},
+    {'name': 'Mexico', 'code': '+52'},
+    {'name': 'El Salvador', 'code': '+503'},
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -61,6 +76,17 @@ class _RegisterPageState extends State<RegisterPage> {
               TextFormField(
                 controller: _usernameController,
                 decoration: InputDecoration(
+                  hintText: 'Username',
+                  prefixIcon: Icon(Icons.person),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+              TextFormField(
+                controller: _emailController,
+                decoration: InputDecoration(
                   hintText: 'Email',
                   prefixIcon: Icon(Icons.email),
                   border: OutlineInputBorder(
@@ -81,6 +107,40 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
               ),
               SizedBox(height: 20),
+              // Selector de código de país
+              DropdownButtonFormField<String>(
+                value: _selectedCountryCode,
+                items: _countryCodes.map((country) {
+                  return DropdownMenuItem<String>(
+                    value: country['code'],
+                    child: Text('${country['name']} (${country['code']})'),
+                  );
+                }).toList(),
+                decoration: InputDecoration(
+                  labelText: 'Select Country',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedCountryCode = value!;
+                  });
+                },
+              ),
+              SizedBox(height: 20),
+              TextFormField(
+                controller: _phoneNumberController,
+                keyboardType: TextInputType.phone,
+                decoration: InputDecoration(
+                  hintText: 'Phone Number',
+                  prefixText: _selectedCountryCode + " ", // Mostrar el código del país seleccionado
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+              ),
+              SizedBox(height: 40),
               _isLoading
                   ? Center(child: CircularProgressIndicator())
                   : ElevatedButton(
@@ -90,11 +150,17 @@ class _RegisterPageState extends State<RegisterPage> {
                     _errorMessage = '';
                   });
 
+                  // Concatenar el código del país y el número de teléfono
+                  String phoneNumber = _selectedCountryCode + _phoneNumberController.text;
+
                   String? errorMessage = await _authService.register(
                     _usernameController.text,
                     _passwordController.text,
                     _firstNameController.text,
                     _lastNameController.text,
+                    _emailController.text,
+                    phoneNumber,
+                    // Agrega aquí cualquier parámetro adicional que requiera tu método register
                   );
 
                   setState(() {

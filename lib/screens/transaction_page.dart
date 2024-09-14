@@ -7,12 +7,25 @@ class TransactionPage extends StatefulWidget {
 }
 
 class _TransactionPageState extends State<TransactionPage> {
-  final TextEditingController _receiverAccountController = TextEditingController();
+  final TextEditingController _receiverPhoneNumberController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   final TransactionService _transactionService = TransactionService();
   bool _isLoading = false;
   String _errorMessage = '';
   String _successMessage = '';
+
+  String _selectedCountryCode = '+51'; // Código por defecto (Perú)
+
+  // Lista de códigos de país
+  final List<Map<String, String>> _countryCodes = [
+    {'name': 'Perú', 'code': '+51'},
+    {'name': 'Colombia', 'code': '+57'},
+    {'name': 'Chile', 'code': '+56'},
+    {'name': 'Argentina', 'code': '+54'},
+    {'name': 'USA', 'code': '+1'},
+    {'name': 'Mexico', 'code': '+52'},
+    {'name': 'El Salvador', 'code': '+503'},
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -26,16 +39,42 @@ class _TransactionPageState extends State<TransactionPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextFormField(
-              controller: _receiverAccountController,
+            // Selector de código de país
+            DropdownButtonFormField<String>(
+              value: _selectedCountryCode,
+              items: _countryCodes.map((country) {
+                return DropdownMenuItem<String>(
+                  value: country['code'],
+                  child: Text('${country['name']} (${country['code']})'),
+                );
+              }).toList(),
               decoration: InputDecoration(
-                labelText: 'Receiver Account Number',
+                labelText: 'Select Country',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _selectedCountryCode = value!;
+                });
+              },
+            ),
+            SizedBox(height: 20),
+            // Campo para el número de teléfono del destinatario
+            TextFormField(
+              controller: _receiverPhoneNumberController,
+              keyboardType: TextInputType.phone,
+              decoration: InputDecoration(
+                labelText: 'Receiver Phone Number',
+                prefixText: _selectedCountryCode + " ", // Mostrar el código del país seleccionado
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
             ),
             SizedBox(height: 20),
+            // Campo para la cantidad a transferir
             TextFormField(
               controller: _amountController,
               keyboardType: TextInputType.number,
@@ -47,6 +86,7 @@ class _TransactionPageState extends State<TransactionPage> {
               ),
             ),
             SizedBox(height: 40),
+            // Botón de transacción
             _isLoading
                 ? Center(child: CircularProgressIndicator())
                 : ElevatedButton(
@@ -57,10 +97,13 @@ class _TransactionPageState extends State<TransactionPage> {
                   _successMessage = '';
                 });
 
+                // Concatenar el código del país y el número de teléfono
+                String receiverPhoneNumber = _selectedCountryCode + _receiverPhoneNumberController.text;
+
                 // Enviar la transacción
                 final response = await _transactionService.makeTransaction(
-                  'sender_account_number',  // Obtén el número de cuenta del usuario logueado
-                  _receiverAccountController.text,
+                  'sender_phone_number',  // Obtén el número de teléfono del usuario logueado
+                  receiverPhoneNumber,    // Número de teléfono con el código del país
                   double.parse(_amountController.text),
                 );
 
