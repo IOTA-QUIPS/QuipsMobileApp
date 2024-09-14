@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:quipsapp/services/auth_service.dart'; // Agrega el servicio de autenticación
 import 'package:shared_preferences/shared_preferences.dart';
-import '../services/chat_service.dart'; // Para manejar el token
+import 'package:contacts_service/contacts_service.dart'; // Paquete para obtener los contactos
+import 'package:permission_handler/permission_handler.dart'; // Paquete para solicitar permisos
+import '../services/chat_service.dart'; // Para manejar las interacciones con el backend
 
 class ContactListPage extends StatefulWidget {
   @override
@@ -18,8 +20,8 @@ class _ContactListPageState extends State<ContactListPage> {
   @override
   void initState() {
     super.initState();
-    _loadCurrentUser();  // Cargar el usuario logeado
-    _contactsFuture = chatApiService.getAllUsers();  // Cargar todos los usuarios disponibles
+    _loadCurrentUser();  // Cargar el usuario logueado
+    _loadPhoneContacts();  // Cargar contactos del teléfono y filtrar los registrados
   }
 
   // Método para obtener el usuario logeado desde el token
@@ -48,6 +50,47 @@ class _ContactListPageState extends State<ContactListPage> {
     } catch (e) {
       print('Error al cargar el usuario logeado: $e');
     }
+  }
+
+  // Método para obtener contactos del teléfono y filtrarlos por los que están registrados
+  Future<void> _loadPhoneContacts() async {
+    try {
+      // Pedir permisos y obtener contactos del teléfono
+      await requestContactsPermission();
+      List<String> phoneContacts = await getPhoneContacts();
+
+      // Enviar los contactos al backend para obtener solo los registrados
+      final registeredContacts = await chatApiService.getRegisteredContacts(phoneContacts); // Aquí envías la lista de contactos al backend
+
+      setState(() {
+        _contactsFuture = Future.value(registeredContacts);  // Solo contactos registrados
+      });
+    } catch (e) {
+      print('Error al cargar contactos del teléfono: $e');
+    }
+  }
+
+  // Pedir permiso para acceder a los contactos del teléfono
+  Future<void> requestContactsPermission() async {
+    if (await Permission.contacts.request().isGranted) {
+      // Permiso otorgado, puedes acceder a los contactos
+    } else {
+      // Permiso denegado
+      openAppSettings(); // Abre la configuración de la app si el permiso es denegado
+    }
+  }
+
+  // Obtener contactos del teléfono
+  Future<List<String>> getPhoneContacts() async {
+    Iterable<Contact> contacts = await ContactsService.getContacts();
+    List<String> phoneNumbers = [];
+
+    for (var contact in contacts) {
+      for (var phone in contact.phones!) {
+        phoneNumbers.add(phone.value!);
+      }
+    }
+    return phoneNumbers;
   }
 
   @override
@@ -86,7 +129,6 @@ class _ContactListPageState extends State<ContactListPage> {
 
                       if (result != null && result.containsKey('id')) {
                         print('Conversación creada/obtenida con éxito. Navegando al chat...');
-                        // Aquí es donde agregas el Navigator.pushNamed
                         Navigator.pushNamed(
                           context,
                           '/chat',

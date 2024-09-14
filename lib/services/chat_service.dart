@@ -7,14 +7,14 @@ class ChatApiService {
   // Crear o recuperar una conversación entre dos usuarios
   Future<Map<String, dynamic>?> createOrGetConversation(String user1Id, String user2Id) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/chat/conversation?user1Id=$user1Id&user2Id=$user2Id'), // Enviar parámetros como query
+      Uri.parse('$baseUrl/chat/conversation?user1Id=$user1Id&user2Id=$user2Id'),
       headers: {
-        'Content-Type': 'application/json; charset=UTF-8', // No es necesario un body en este caso
+        'Content-Type': 'application/json; charset=UTF-8',
       },
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);  // Regresa la conversación creada o recuperada
+      return jsonDecode(response.body);
     } else {
       print('Error al crear o recuperar la conversación. Código: ${response.statusCode}');
       print('Detalles del error: ${response.body}');
@@ -38,7 +38,7 @@ class ChatApiService {
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);  // Regresa el mensaje enviado
+      return jsonDecode(response.body);
     } else {
       print('Error al enviar el mensaje: ${response.statusCode} - ${response.body}');
       return {'error': 'Error al enviar el mensaje'};
@@ -48,49 +48,68 @@ class ChatApiService {
   // Obtener los mensajes de una conversación
   Future<List<dynamic>?> getConversationMessages(String conversationId) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/chat/conversation/$conversationId/messages'), // Cambiado a la ruta correcta
+      Uri.parse('$baseUrl/chat/conversation/$conversationId/messages'),
       headers: {
-        'Content-Type': 'application/json; charset=UTF-8', // Formato JSON
+        'Content-Type': 'application/json; charset=UTF-8',
       },
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);  // Regresa la lista de mensajes
+      return jsonDecode(response.body);
     } else {
-      return null;  // Manejar error
+      return null;
     }
   }
 
   // Obtener todos los usuarios disponibles para chatear
   Future<List<dynamic>?> getAllUsers() async {
     final response = await http.get(
-      Uri.parse('$baseUrl/users'),  // Usar el endpoint correcto para obtener todos los usuarios
+      Uri.parse('$baseUrl/users'),
       headers: {
-        'Content-Type': 'application/json; charset=UTF-8', // Formato JSON
+        'Content-Type': 'application/json; charset=UTF-8',
       },
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);  // Regresa la lista de usuarios disponibles
+      return jsonDecode(response.body);
     } else {
-      return null;  // Manejar error
+      return null;
     }
   }
 
   // Obtener la información del usuario autenticado (si se necesita para otros casos)
   Future<Map<String, dynamic>?> getMyUserInfo(String token) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/users/me'), // Endpoint para obtener información del usuario actual
+      Uri.parse('$baseUrl/users/me'),
       headers: {
-        'Authorization': 'Bearer $token', // Incluir el token en la cabecera
+        'Authorization': 'Bearer $token',
         'Content-Type': 'application/json; charset=UTF-8',
       },
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);  // Regresa la información del usuario
+      return jsonDecode(response.body);
     } else {
       return {'error': 'Error al obtener la información del usuario'};
+    }
+  }
+
+  // Aquí agregamos el método faltante para obtener contactos registrados
+  // Obtener solo los contactos que están registrados en la app
+  Future<List<dynamic>> getRegisteredContacts(List<String> phoneNumbers) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/contacts/check'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(phoneNumbers), // Enviamos la lista de contactos en formato JSON
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);  // Devuelve la lista de contactos registrados
+    } else {
+      print('Error al obtener contactos registrados: ${response.statusCode} - ${response.body}');
+      throw Exception('Error al obtener contactos registrados');
     }
   }
 }
