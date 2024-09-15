@@ -2,6 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+
+     <key>NSLocationWhenInUseUsageDescription</key>
+     <string>La aplicación necesita acceder a su ubicación para determinar el código de país.</string>
+
+     <key>NSLocationAlwaysUsageDescription</key>
+     <string>La aplicación necesita acceder a su ubicación siempre para proporcionar servicios basados en la ubicación.</string>
+
+
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

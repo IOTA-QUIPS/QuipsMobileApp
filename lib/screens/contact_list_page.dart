@@ -4,6 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:contacts_service/contacts_service.dart'; // Paquete para obtener los contactos
 import 'package:permission_handler/permission_handler.dart'; // Paquete para solicitar permisos
 import '../services/chat_service.dart'; // Para manejar las interacciones con el backend
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+
 
 class ContactListPage extends StatefulWidget {
   @override
@@ -55,41 +58,128 @@ class _ContactListPageState extends State<ContactListPage> {
   // Método para obtener contactos del teléfono y filtrarlos por los que están registrados
   Future<void> _loadPhoneContacts() async {
     try {
-      // Pedir permisos y obtener contactos del teléfono
       await requestContactsPermission();
       List<String> phoneContacts = await getPhoneContacts();
 
+      // Imprimir los contactos del teléfono
+      print('Contactos obtenidos del teléfono: $phoneContacts');
+
       // Enviar los contactos al backend para obtener solo los registrados
-      final registeredContacts = await chatApiService.getRegisteredContacts(phoneContacts); // Aquí envías la lista de contactos al backend
+      final registeredContacts = await chatApiService.getRegisteredContacts(phoneContacts);
+
+      // Imprimir los contactos registrados devueltos por el backend
+      print('Contactos registrados devueltos por el backend: $registeredContacts');
 
       setState(() {
-        _contactsFuture = Future.value(registeredContacts);  // Solo contactos registrados
+        _contactsFuture = Future.value(registeredContacts);
       });
     } catch (e) {
       print('Error al cargar contactos del teléfono: $e');
     }
   }
 
-  // Pedir permiso para acceder a los contactos del teléfono
+  /// Solicitar permisos para acceder a los contactos del teléfono.
   Future<void> requestContactsPermission() async {
-    if (await Permission.contacts.request().isGranted) {
-      // Permiso otorgado, puedes acceder a los contactos
-    } else {
-      // Permiso denegado
-      openAppSettings(); // Abre la configuración de la app si el permiso es denegado
+    try {
+      PermissionStatus status = await Permission.contacts.status;
+
+      if (!status.isGranted) {
+        // Solicitar el permiso si aún no ha sido concedido
+        status = await Permission.contacts.request();
+      }
+
+      if (status.isGranted) {
+        print('Permiso de contactos otorgado.');
+      } else if (status.isDenied || status.isPermanentlyDenied) {
+        print('Permiso de contactos denegado. Abriendo configuración.');
+        openAppSettings(); // Abrir configuración de la app si se deniega permanentemente
+      }
+    } catch (e) {
+      print('Error al solicitar permiso de contactos: $e');
+      throw Exception('Error al solicitar permisos para los contactos');
     }
   }
 
-  // Obtener contactos del teléfono
+  /// Obtener la ubicación actual del usuario y determinar el código de país.
+  Future<String> getCountryCode() async {
+    try {
+      // Verificar si el permiso de ubicación está concedido
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          print('Permiso de ubicación denegado.');
+          return '+51';  // Código por defecto para Perú si no se puede obtener la ubicación
+        }
+      }
+
+      // Obtener la ubicación actual del usuario (latitud y longitud)
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+
+      print('Ubicación obtenida: ${position.latitude}, ${position.longitude}');
+
+      // Usar el paquete 'geocoding' para obtener información sobre la ubicación
+      List<Placemark> placemarks =
+      await placemarkFromCoordinates(position.latitude, position.longitude);
+
+      // Obtener el país del primer resultado
+      String? country = placemarks.first.isoCountryCode;
+      print('Código del país detectado: $country');
+
+      // Usar un mapa para asociar los códigos de país a los códigos telefónicos internacionales
+      Map<String, String> countryCodes = {
+        'PE': '+51', // Perú
+        'US': '+1',  // Estados Unidos
+        'AR': '+54', // Argentina
+        'CL': '+56', // Chile
+        'MX': '+52', // México
+        'SV': '+503', // El Salvador
+        'CO': '+57', // Colombia
+        // Agrega más países según sea necesario
+      };
+
+      // Retornar el código de país o un código por defecto
+      return countryCodes[country] ?? '+51'; // Usar +51 si no se encuentra el país
+    } catch (e) {
+      print('Error al obtener la ubicación o el país: $e');
+      return '+51';  // Código por defecto si algo falla
+    }
+  }
+
+  /// Obtener y normalizar los números de teléfono de los contactos almacenados en el dispositivo.
+  /// Se agrega el código de país dinámico si el número no tiene uno.
   Future<List<String>> getPhoneContacts() async {
-    Iterable<Contact> contacts = await ContactsService.getContacts();
     List<String> phoneNumbers = [];
 
-    for (var contact in contacts) {
-      for (var phone in contact.phones!) {
-        phoneNumbers.add(phone.value!);
+    // Obtener el código de país dinámico basado en la ubicación
+    String countryCode = await getCountryCode();
+
+    try {
+      Iterable<Contact> contacts = await ContactsService.getContacts();
+
+      for (var contact in contacts) {
+        for (var phone in contact.phones!) {
+          // Eliminar caracteres no numéricos y espacios
+          String normalizedPhone = phone.value!
+              .replaceAll(RegExp(r'[^\d+]'), '');  // Mantener solo números y el símbolo '+'
+
+          // Si el número no empieza con '+', asumimos que es un número local y agregamos el código de país dinámico
+          if (!normalizedPhone.startsWith('+')) {
+            normalizedPhone = '$countryCode$normalizedPhone';
+          }
+
+          phoneNumbers.add(normalizedPhone);
+        }
       }
+
+      // Imprimir contactos normalizados para depuración
+      print("Contactos normalizados obtenidos del teléfono: $phoneNumbers");
+    } catch (e) {
+      print('Error al obtener contactos: $e');
+      throw Exception('Error al obtener contactos del teléfono');
     }
+
     return phoneNumbers;
   }
 
