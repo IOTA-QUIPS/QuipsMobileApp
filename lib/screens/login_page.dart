@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:quipsapp/services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:quipsapp/services/auth_service.dart';
+import '../admin/admin_home.dart';
+import 'home_page.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -88,8 +90,36 @@ class _LoginPageState extends State<LoginPage> {
                     SharedPreferences prefs = await SharedPreferences.getInstance();
                     await prefs.setString('jwtToken', token);
 
-                    // Navega a la pantalla principal con el token
-                    Navigator.pushReplacementNamed(context, '/home');
+                    // Segunda solicitud para obtener la información completa del usuario (/me)
+                    final userInfo = await _authService.getUserInfo(token);
+
+                    if (userInfo != null && userInfo.containsKey('roles')) {
+                      final roles = userInfo['roles'];
+
+                      // Verificar los roles del usuario
+                      if (roles.contains('ROLE_ADMIN')) {
+                        // Redirigir al Admin Dashboard
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AdminHome(token),
+                          ),
+                        );
+                      } else {
+                        // Redirigir a la HomePage (usuarios normales)
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => HomePage(),
+                          ),
+                        );
+                      }
+                    } else {
+                      // Manejar error al obtener la información del usuario
+                      setState(() {
+                        _errorMessage = 'Failed to fetch user information';
+                      });
+                    }
                   }
                 },
                 child: Text('Login'),

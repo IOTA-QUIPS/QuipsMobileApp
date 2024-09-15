@@ -74,12 +74,16 @@ class AuthService {
       );
 
       if (response.statusCode == 200) {
+        print('User Info Response: ${response.body}');  // Imprimir los datos recibidos
         return jsonDecode(response.body); // Retorna los datos del usuario
       } else {
+        print('Error fetching user info: ${response.body}');  // Imprimir el error si ocurre
         return {'error': 'Failed to fetch user info'};
       }
     } catch (e) {
+      print('Exception: $e');
       return {'error': 'Could not connect to the server. Please check your connection.'};
     }
   }
+
 }

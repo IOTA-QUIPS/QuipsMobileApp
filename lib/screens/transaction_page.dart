@@ -119,6 +119,8 @@ class _TransactionPageState extends State<TransactionPage> {
                   setState(() {
                     _successMessage = 'Transaction successful';
                   });
+                  // Devuelve true para indicar éxito
+                  Navigator.pop(context, true);
                 }
               },
               child: Text('Make Transaction'),
