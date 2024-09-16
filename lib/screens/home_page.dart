@@ -262,7 +262,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Sección de Noticias
+  // Sección de Noticias mejorada
   Widget _buildNewsSection() {
     return Expanded(
       child: Column(
@@ -270,7 +270,7 @@ class _HomePageState extends State<HomePage> {
         children: [
           Text(
             'Latest News',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 10),
           newsList.isEmpty
@@ -281,12 +281,94 @@ class _HomePageState extends State<HomePage> {
               itemBuilder: (context, index) {
                 final news = newsList[index];
                 return Card(
-                  elevation: 3,
-                  margin: EdgeInsets.symmetric(vertical: 8),
-                  child: ListTile(
-                    leading: Icon(FontAwesomeIcons.newspaper, color: Colors.blueAccent),
-                    title: Text(news.title, style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text(news.content, maxLines: 2, overflow: TextOverflow.ellipsis),
+                  elevation: 5,
+                  margin: EdgeInsets.symmetric(vertical: 8, horizontal: 9),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Mostrar imagen si hay un imageUrl disponible y limitar el tamaño
+                        news.imageUrl.isNotEmpty
+                            ? ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.network(
+                            news.imageUrl,
+                            height: 80,
+                            width: 80,  // Limitar el ancho de la imagen
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                Icons.broken_image,
+                                size: 80,
+                                color: Colors.red,
+                              );
+                            },
+                          ),
+                        )
+                            : Icon(
+                          Icons.image_not_supported,
+                          size: 80,
+                          color: Colors.grey,
+                        ),
+                        SizedBox(width: 10),
+                        // Usamos Expanded para evitar el overflow del texto
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                news.title,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                overflow: TextOverflow.ellipsis,  // Previene overflow
+                              ),
+                              SizedBox(height: 5),
+                              Text(
+                                news.content,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[700],
+                                ),
+                              ),
+                              SizedBox(height: 10),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  // Usamos Expanded para permitir que el texto use el espacio disponible
+                                  Expanded(
+                                    child: Text(
+                                      'Published at: ${news.publishedAt}',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[500],
+                                      ),
+                                      overflow: TextOverflow.ellipsis, // Prevenir overflow
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.arrow_forward),
+                                    onPressed: () {
+                                      // Acción para ver más detalles de la noticia
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },
@@ -296,4 +378,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+
 }

@@ -26,15 +26,19 @@ class NewsService {
     }
   }
 
-  // Agregar una nueva noticia (solo admin)
-  Future<void> addNews(String title, String content) async {
+  // Agregar una nueva noticia (solo admin) con imageUrl incluido
+  Future<void> addNews(String title, String content, String imageUrl) async {
     final response = await http.post(
       Uri.parse('$apiUrl/add'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
       },
-      body: jsonEncode({'title': title, 'content': content}),
+      body: jsonEncode({
+        'title': title,
+        'content': content,
+        'imageUrl': imageUrl, // Incluir imageUrl en el cuerpo de la solicitud
+      }),
     );
 
     if (response.statusCode != 200) {
@@ -42,15 +46,19 @@ class NewsService {
     }
   }
 
-  // Editar una noticia existente (solo admin)
-  Future<void> editNews(int id, String title, String content) async {
+  // Editar una noticia existente (solo admin) con imageUrl incluido
+  Future<void> editNews(int id, String title, String content, String imageUrl) async {
     final response = await http.put(
       Uri.parse('$apiUrl/edit/$id'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
       },
-      body: jsonEncode({'title': title, 'content': content}),
+      body: jsonEncode({
+        'title': title,
+        'content': content,
+        'imageUrl': imageUrl, // Incluir imageUrl en el cuerpo de la solicitud
+      }),
     );
 
     if (response.statusCode != 200) {
@@ -73,3 +81,4 @@ class NewsService {
     }
   }
 }
+

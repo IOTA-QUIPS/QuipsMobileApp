@@ -15,7 +15,8 @@ import 'admin/admin_home.dart'; // Pantalla de inicio de admin
 import 'admin/manage_news.dart'; // Pantalla para gestión de noticias
 import 'admin/add_edit_news.dart'; // Pantalla para agregar/editar noticias
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 

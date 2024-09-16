@@ -17,6 +17,7 @@ class AddEditNews extends StatefulWidget {
 class _AddEditNewsState extends State<AddEditNews> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
+  final TextEditingController _imageUrlController = TextEditingController(); // Controlador para la URL de la imagen
   late NewsService _newsService;
 
   @override
@@ -26,6 +27,7 @@ class _AddEditNewsState extends State<AddEditNews> {
     if (widget.isEditing && widget.news != null) {
       _titleController.text = widget.news!.title;
       _contentController.text = widget.news!.content;
+      _imageUrlController.text = widget.news!.imageUrl ?? ''; // Cargar la URL si existe
     }
   }
 
@@ -35,11 +37,13 @@ class _AddEditNewsState extends State<AddEditNews> {
         widget.news!.id,
         _titleController.text,
         _contentController.text,
+        _imageUrlController.text, // Usar la URL ingresada
       );
     } else {
       await _newsService.addNews(
         _titleController.text,
         _contentController.text,
+        _imageUrlController.text, // Usar la URL ingresada
       );
     }
     widget.onSave();
@@ -65,6 +69,11 @@ class _AddEditNewsState extends State<AddEditNews> {
               controller: _contentController,
               decoration: InputDecoration(labelText: 'Contenido'),
               maxLines: 5,
+            ),
+            SizedBox(height: 20),
+            TextField(
+              controller: _imageUrlController,
+              decoration: InputDecoration(labelText: 'URL de la Imagen'),
             ),
             SizedBox(height: 20),
             ElevatedButton(

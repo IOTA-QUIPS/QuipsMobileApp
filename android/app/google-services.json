@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "690368667587",
+    "project_id": "quips-3e7b6",
+    "storage_bucket": "quips-3e7b6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:690368667587:android:86749aea4b1832ec862776",
+        "android_client_info": {
+          "package_name": "com.example.quipsapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA9UTc6rR_hZ1Mjj63Cni9BGswu_Js3nJY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
