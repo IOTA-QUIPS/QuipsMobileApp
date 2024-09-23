@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:quipsapp/screens/chat_history_page.dart';
 import 'package:quipsapp/screens/contact_list_page.dart';
 import 'package:quipsapp/screens/register_page.dart';
+import 'package:quipsapp/screens/terms_page.dart';
 import 'screens/login_page.dart';
 import 'screens/home_page.dart';
 import 'screens/transaction_page.dart';
@@ -44,6 +45,7 @@ class MyApp extends StatelessWidget {
         '/support': (context) => SupportPage(),
         '/contacts': (context) => ContactListPage(),
         '/chatHistory': (context) => ChatHistoryPage(),
+        '/terms': (context) => TermsPage(),
         '/admin': (context) => AdminHome('admin-token'),  // Admin Home
         '/manage-news': (context) => ManageNews('admin-token'),  // Gestión de noticias
         '/add-news': (context) => AddEditNews(token: 'admin-token', isEditing: false, onSave: () {}), // Agregar noticia

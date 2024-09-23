@@ -13,9 +13,12 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
+  final TextEditingController _referralCodeController = TextEditingController(); // Controlador para el código de referido
+
   final AuthService _authService = AuthService();
   bool _isLoading = false;
   String _errorMessage = '';
+  bool _acceptTerms = false; // Variable para gestionar si aceptó los términos y condiciones
 
   String _selectedCountryCode = '+51'; // Código por defecto (Perú)
 
@@ -134,17 +137,62 @@ class _RegisterPageState extends State<RegisterPage> {
                 keyboardType: TextInputType.phone,
                 decoration: InputDecoration(
                   hintText: 'Phone Number',
-                  prefixText: _selectedCountryCode + " ", // Mostrar el código del país seleccionado
+                  prefixText: _selectedCountryCode + " ",
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                 ),
+              ),
+              SizedBox(height: 20),
+              // Campo para el código de referido
+              TextFormField(
+                controller: _referralCodeController,
+                decoration: InputDecoration(
+                  hintText: 'Referral Code (Optional)',
+                  prefixIcon: Icon(Icons.card_giftcard),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+              // Checkbox para aceptar los términos y condiciones
+              Row(
+                children: [
+                  Checkbox(
+                    value: _acceptTerms,
+                    onChanged: (value) {
+                      setState(() {
+                        _acceptTerms = value!;
+                      });
+                    },
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(context, '/terms');
+                    },
+                    child: Text(
+                      "I accept the terms and conditions",
+                      style: TextStyle(
+                        color: Colors.blue,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               SizedBox(height: 40),
               _isLoading
                   ? Center(child: CircularProgressIndicator())
                   : ElevatedButton(
                 onPressed: () async {
+                  if (!_acceptTerms) {
+                    setState(() {
+                      _errorMessage = "You must accept the terms and conditions";
+                    });
+                    return;
+                  }
+
                   setState(() {
                     _isLoading = true;
                     _errorMessage = '';
@@ -160,7 +208,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     _lastNameController.text,
                     _emailController.text,
                     phoneNumber,
-                    // Agrega aquí cualquier parámetro adicional que requiera tu método register
+                    _referralCodeController.text, // Pasar el código de referido
                   );
 
                   setState(() {

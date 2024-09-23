@@ -34,7 +34,7 @@ class AuthService {
   }
 
   // Método para hacer registro
-  Future<String?> register(String username, String password, String firstName, String lastName, String email, String phoneNumber) async {
+  Future<String?> register(String username, String password, String firstName, String lastName, String email, String phoneNumber, String referralCode) async {
     try {
       final response = await http.post(
         Uri.parse(registerApiUrl),
@@ -47,7 +47,8 @@ class AuthService {
           'firstName': firstName,
           'lastName': lastName,
           'email': email,                // Agregar email
-          'phoneNumber': phoneNumber,    // Agregar número de teléfono
+          'phoneNumber': phoneNumber,
+          'referralCode': referralCode, // Agregar número de teléfono
         }),
       );
 
