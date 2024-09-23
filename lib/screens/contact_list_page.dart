@@ -36,6 +36,10 @@ class _ContactListPageState extends State<ContactListPage> {
       if (token != null) {
         // Llamada al servicio de autenticación para obtener la información del usuario
         final response = await authService.getUserInfo(token);
+
+        // Agrega el print aquí para verificar la respuesta
+        print('Respuesta del servicio de autenticación: $response');
+
         if (response != null && !response.containsKey('error')) {
           setState(() {
             currentUserId = response['id'].toString();
@@ -43,10 +47,9 @@ class _ContactListPageState extends State<ContactListPage> {
             print('Usuario actual cargado correctamente: $currentUsername ($currentUserId)');
           });
         } else {
-          print('Error al obtener la información del usuario actual');
+          print('Error al obtener la información del usuario actual: $response');
         }
       } else {
-        // Manejar el caso donde no hay token disponible
         print('No se encontró el token, redirigiendo al login');
         Navigator.pushReplacementNamed(context, '/login');
       }
@@ -54,6 +57,7 @@ class _ContactListPageState extends State<ContactListPage> {
       print('Error al cargar el usuario logeado: $e');
     }
   }
+
 
   // Método para obtener contactos del teléfono y filtrarlos por los que están registrados
   Future<void> _loadPhoneContacts() async {
@@ -212,37 +216,46 @@ class _ContactListPageState extends State<ContactListPage> {
                   title: Text("${contact['firstName']} ${contact['lastName']}"),
                   subtitle: Text(contact['username']),
                   onTap: () async {
-                    try {
-                      print('Iniciando conversación con ${contact['username']}');
-                      final result = await chatApiService.createOrGetConversation(
-                          currentUserId!, contact['id'].toString());
+                    print('currentUserId: $currentUserId, contactId: ${contact['id']}');
+                    if (currentUserId != null && contact['id'] != null) {
+                      try {
+                        print('Iniciando conversación con ${contact['username']}');
+                        final result = await chatApiService.createOrGetConversation(
+                            currentUserId!, contact['id'].toString());
 
-                      if (result != null && result.containsKey('id')) {
-                        print('Conversación creada/obtenida con éxito. Navegando al chat...');
-                        Navigator.pushNamed(
-                          context,
-                          '/chat',
-                          arguments: {
-                            'senderUsername': currentUsername!,  // Nombre del usuario actual
-                            'receiverUsername': contact['username'],
-                            'conversationId': result['id'].toString(),
-                            'senderId': currentUserId!,
-                            'receiverId': contact['id'].toString(),
-                          },
-                        );
-                      } else {
-                        print('Error al crear o recuperar la conversación: $result');
+                        if (result != null && result.containsKey('id')) {
+                          print('Conversación creada/obtenida con éxito. Navegando al chat...');
+                          Navigator.pushNamed(
+                            context,
+                            '/chat',
+                            arguments: {
+                              'senderUsername': currentUsername!,  // Nombre del usuario actual
+                              'receiverUsername': contact['username'],
+                              'conversationId': result['id'].toString(),
+                              'senderId': currentUserId!,
+                              'receiverId': contact['id'].toString(),
+                            },
+                          );
+                        } else {
+                          print('Error al crear o recuperar la conversación: $result');
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error al crear o recuperar la conversación'))
+                          );
+                        }
+                      } catch (e) {
+                        print('Error al intentar abrir el chat: $e');
                         ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error al crear o recuperar la conversación'))
+                            SnackBar(content: Text('Error al intentar abrir el chat: $e'))
                         );
                       }
-                    } catch (e) {
-                      print('Error al intentar abrir el chat: $e');
+                    } else {
+                      print('currentUserId o contactId es null, no se puede iniciar la conversación.');
                       ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Error al intentar abrir el chat: $e'))
+                          SnackBar(content: Text('No se puede iniciar la conversación, datos incompletos.'))
                       );
                     }
                   },
+
                 );
               },
             );
