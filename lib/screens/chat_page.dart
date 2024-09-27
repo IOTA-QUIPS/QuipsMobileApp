@@ -5,7 +5,7 @@ class ChatPage extends StatefulWidget {
   final String senderId;
   final String receiverId;
   final String senderUsername;
-  final String receiverUsername;
+  final String receiverUsername;  // Ahora este será el nombre recuperado del teléfono
 
   ChatPage({
     required this.senderId,
@@ -31,7 +31,6 @@ class _ChatPageState extends State<ChatPage> {
     _initializeConversation();
   }
 
-  // Inicializar la conversación
   Future<void> _initializeConversation() async {
     final response = await chatApiService.createOrGetConversation(
       widget.senderId,
@@ -40,15 +39,14 @@ class _ChatPageState extends State<ChatPage> {
 
     if (response != null && !response.containsKey('error')) {
       setState(() {
-        conversationId = response['id'].toString(); // Guardar el ID de la conversación
-        _loadMessages(); // Cargar los mensajes previos
+        conversationId = response['id'].toString();  // Guardar el ID de la conversación
+        _loadMessages();  // Cargar los mensajes previos
       });
     } else {
       print('Error al crear o recuperar la conversación');
     }
   }
 
-  // Cargar los mensajes de la conversación
   Future<void> _loadMessages() async {
     if (conversationId != null) {
       final messagesResponse = await chatApiService.getConversationMessages(conversationId!);
@@ -56,7 +54,7 @@ class _ChatPageState extends State<ChatPage> {
       if (messagesResponse != null) {
         setState(() {
           _messages = messagesResponse
-              .map<String>((msg) => "${msg['sender']['username']}: ${msg['content']}")
+              .map<String>((msg) => "${widget.receiverUsername}: ${msg['content']}")
               .toList();
         });
       } else {
@@ -65,7 +63,6 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-  // Enviar un mensaje
   void _sendMessage() async {
     if (_controller.text.isNotEmpty && conversationId != null) {
       final response = await chatApiService.sendMessage(
@@ -79,7 +76,7 @@ class _ChatPageState extends State<ChatPage> {
         setState(() {
           _messages.add('${widget.senderUsername}: ${_controller.text}');
         });
-        _controller.clear(); // Limpiar el campo de entrada de texto
+        _controller.clear();  // Limpiar el campo de entrada de texto
       } else {
         print('Error al enviar el mensaje');
       }
@@ -90,7 +87,7 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Chat with ${widget.receiverUsername}'), // Mostrar el nombre del receptor
+        title: Text('Chat with ${widget.receiverUsername}'),  // Mostramos el nombre del contacto del teléfono
         backgroundColor: Colors.blueAccent,
       ),
       body: Column(
