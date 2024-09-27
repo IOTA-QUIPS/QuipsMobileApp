@@ -112,6 +112,11 @@ class _ContactListPageState extends State<ContactListPage> {
                 // Mostrar nombre de contacto local si existe
                 final localName = phoneContactNames[phoneNumber] ?? contact['username'];
 
+                // Evitar que el contacto actual (el propio usuario) se muestre
+                if (contact['id'].toString() == currentUserId || phoneNumber == currentUsername) {
+                  return SizedBox.shrink();  // Ocultar al usuario actual
+                }
+
                 return ListTile(
                   title: Text(localName),  // Nombre del contacto en la libreta de contactos
                   subtitle: Text(phoneNumber),
