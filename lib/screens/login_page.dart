@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quipsapp/services/auth_service.dart';
 import '../admin/admin_home.dart';
 import 'home_page.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Importa localizaciones
 
 class LoginPage extends StatefulWidget {
   @override
@@ -18,6 +19,9 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Obtener las traducciones desde el archivo de localización
+    var localizations = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
@@ -28,7 +32,7 @@ class _LoginPageState extends State<LoginPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Welcome Back',
+                localizations.welcomeBack, // Localización de "Welcome Back"
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 32,
@@ -40,7 +44,7 @@ class _LoginPageState extends State<LoginPage> {
               TextFormField(
                 controller: _usernameController,
                 decoration: InputDecoration(
-                  hintText: 'Email',
+                  hintText: localizations.email, // Localización de "Email"
                   prefixIcon: Icon(Icons.email),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
@@ -52,7 +56,7 @@ class _LoginPageState extends State<LoginPage> {
                 controller: _passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
-                  hintText: 'Password',
+                  hintText: localizations.password, // Localización de "Password"
                   prefixIcon: Icon(Icons.lock),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
@@ -117,12 +121,12 @@ class _LoginPageState extends State<LoginPage> {
                     } else {
                       // Manejar error al obtener la información del usuario
                       setState(() {
-                        _errorMessage = 'Failed to fetch user information';
+                        _errorMessage = localizations.errorFetchingUserInfo; // Localización de error
                       });
                     }
                   }
                 },
-                child: Text('Login'),
+                child: Text(localizations.login), // Localización de "Login"
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(vertical: 16.0),
                   textStyle: TextStyle(fontSize: 18),
@@ -144,7 +148,7 @@ class _LoginPageState extends State<LoginPage> {
                   Navigator.pushNamed(context, '/register');
                 },
                 child: Text(
-                  "Don't have an account? Sign Up",
+                  localizations.dontHaveAccountSignUp, // Localización de "Don't have an account? Sign Up"
                   style: TextStyle(color: Colors.blueAccent),
                 ),
               ),

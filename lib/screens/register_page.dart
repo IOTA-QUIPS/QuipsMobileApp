@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quipsapp/services/auth_service.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Importa localizaciones
 
 class RegisterPage extends StatefulWidget {
   @override
@@ -35,6 +36,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Obtener las traducciones desde el archivo de localización
+    var localizations = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
@@ -45,7 +49,7 @@ class _RegisterPageState extends State<RegisterPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Create Account',
+                localizations.createAccount, // Localización de "Create Account"
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 32,
@@ -57,7 +61,7 @@ class _RegisterPageState extends State<RegisterPage> {
               TextFormField(
                 controller: _firstNameController,
                 decoration: InputDecoration(
-                  hintText: 'First Name',
+                  hintText: localizations.firstName, // Localización de "First Name"
                   prefixIcon: Icon(Icons.person),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
@@ -68,7 +72,7 @@ class _RegisterPageState extends State<RegisterPage> {
               TextFormField(
                 controller: _lastNameController,
                 decoration: InputDecoration(
-                  hintText: 'Last Name',
+                  hintText: localizations.lastName, // Localización de "Last Name"
                   prefixIcon: Icon(Icons.person_outline),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
@@ -79,7 +83,7 @@ class _RegisterPageState extends State<RegisterPage> {
               TextFormField(
                 controller: _usernameController,
                 decoration: InputDecoration(
-                  hintText: 'Username',
+                  hintText: localizations.username, // Localización de "Username"
                   prefixIcon: Icon(Icons.person),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
@@ -90,7 +94,7 @@ class _RegisterPageState extends State<RegisterPage> {
               TextFormField(
                 controller: _emailController,
                 decoration: InputDecoration(
-                  hintText: 'Email',
+                  hintText: localizations.email, // Localización de "Email"
                   prefixIcon: Icon(Icons.email),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
@@ -102,7 +106,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 controller: _passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
-                  hintText: 'Password',
+                  hintText: localizations.password, // Localización de "Password"
                   prefixIcon: Icon(Icons.lock),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
@@ -120,7 +124,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   );
                 }).toList(),
                 decoration: InputDecoration(
-                  labelText: 'Select Country',
+                  labelText: localizations.selectCountry, // Localización de "Select Country"
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
                   ),
@@ -136,7 +140,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 controller: _phoneNumberController,
                 keyboardType: TextInputType.phone,
                 decoration: InputDecoration(
-                  hintText: 'Phone Number',
+                  hintText: localizations.phoneNumber, // Localización de "Phone Number"
                   prefixText: _selectedCountryCode + " ",
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
@@ -148,7 +152,7 @@ class _RegisterPageState extends State<RegisterPage> {
               TextFormField(
                 controller: _referralCodeController,
                 decoration: InputDecoration(
-                  hintText: 'Referral Code (Optional)',
+                  hintText: localizations.referralCodeOptional, // Localización de "Referral Code (Optional)"
                   prefixIcon: Icon(Icons.card_giftcard),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
@@ -172,7 +176,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       Navigator.pushNamed(context, '/terms');
                     },
                     child: Text(
-                      "I accept the terms and conditions",
+                      localizations.acceptTermsAndConditions, // Localización de "I accept the terms and conditions"
                       style: TextStyle(
                         color: Colors.blue,
                         decoration: TextDecoration.underline,
@@ -188,7 +192,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 onPressed: () async {
                   if (!_acceptTerms) {
                     setState(() {
-                      _errorMessage = "You must accept the terms and conditions";
+                      _errorMessage = localizations.mustAcceptTerms; // Localización de "You must accept the terms and conditions"
                     });
                     return;
                   }
@@ -225,7 +229,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     });
                   }
                 },
-                child: Text('Register'),
+                child: Text(localizations.register), // Localización de "Register"
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(vertical: 16.0),
                   textStyle: TextStyle(fontSize: 18),
@@ -247,7 +251,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   Navigator.pushNamed(context, '/login');
                 },
                 child: Text(
-                  "Already have an account? Login",
+                  localizations.alreadyHaveAccountLogin, // Localización de "Already have an account? Login"
                   style: TextStyle(color: Colors.greenAccent),
                 ),
               ),

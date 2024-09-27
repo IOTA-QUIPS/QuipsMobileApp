@@ -5,6 +5,7 @@ import 'package:quipsapp/screens/transaction_page.dart'; // Asegúrate de tener 
 import 'package:quipsapp/services/news_service.dart';
 import 'package:quipsapp/model/news_model.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Para localizaciones
 
 class HomePage extends StatefulWidget {
   @override
@@ -37,7 +38,6 @@ class _HomePageState extends State<HomePage> {
           userName = response['firstName'] + " " + response['lastName'];
           // Acceder a coins directamente del nivel superior del JSON
           balance = response['coins'] != null ? response['coins'].toDouble() : 0.0;
-
         });
       } else {
         print('Error al cargar los datos del usuario');
@@ -65,6 +65,9 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Obtener las traducciones desde el archivo de localización
+    var localizations = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Quips App'),
@@ -78,47 +81,47 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      drawer: _buildDrawer(),
+      drawer: _buildDrawer(localizations),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildHeader(),
+            _buildHeader(localizations),
             SizedBox(height: 20),
-            _buildBalanceCard(),
+            _buildBalanceCard(localizations),
             SizedBox(height: 20),
-            _buildActionButtons(),
+            _buildActionButtons(localizations),
             SizedBox(height: 20),
-            _buildNewsSection(),
+            _buildNewsSection(localizations),
           ],
         ),
       ),
     );
   }
 
-  // Sección del Header
-  Widget _buildHeader() {
+  // Sección del Header con texto localizado
+  Widget _buildHeader(AppLocalizations localizations) {
     return Text(
-      'Hello, $userName',
+      '${localizations.hello} $userName', // "Hello" traducido
       style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
     );
   }
 
-  // Sección del Balance
-  Widget _buildBalanceCard() {
+  // Sección del Balance con texto localizado
+  Widget _buildBalanceCard(AppLocalizations localizations) {
     return Card(
       elevation: 4,
       child: ListTile(
         leading: Icon(FontAwesomeIcons.wallet, color: Colors.green, size: 40),
-        title: Text('Your Balance', style: TextStyle(fontSize: 20)),
+        title: Text(localizations.yourBalance, style: TextStyle(fontSize: 20)), // "Your Balance" traducido
         subtitle: Text('\$$balance', style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.green)),
       ),
     );
   }
 
   // Mejoramos los botones con gradiente y sombras suaves
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(AppLocalizations localizations) {
     return Column(
       children: [
         Container(
@@ -151,7 +154,7 @@ class _HomePageState extends State<HomePage> {
                 }
               });
             },
-            child: Text('Make a Transaction'),
+            child: Text(localizations.makeTransaction), // "Make a Transaction" traducido
             style: ElevatedButton.styleFrom(
               padding: EdgeInsets.symmetric(vertical: 16.0),
               textStyle: TextStyle(fontSize: 18),
@@ -188,7 +191,7 @@ class _HomePageState extends State<HomePage> {
             ),
             icon: Icon(FontAwesomeIcons.solidComments, size: 24),
             label: Text(
-              'Chat',
+              localizations.chat, // "Chat" traducido
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
@@ -198,7 +201,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   // Sección del Drawer
-  Widget _buildDrawer() {
+  Widget _buildDrawer(AppLocalizations localizations) {
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -208,7 +211,7 @@ class _HomePageState extends State<HomePage> {
               color: Colors.blueAccent,
             ),
             child: Text(
-              'Hello, $userName',
+              '${localizations.hello} $userName', // "Hello" traducido
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 24,
@@ -217,40 +220,40 @@ class _HomePageState extends State<HomePage> {
           ),
           ListTile(
             leading: Icon(Icons.account_balance_wallet),
-            title: Text('Your Balance'),
+            title: Text(localizations.yourBalance), // "Your Balance" traducido
             subtitle: Text('\$$balance'),
           ),
           ListTile(
             leading: Icon(Icons.history),
-            title: Text('Transaction History'),
+            title: Text(localizations.transactionHistory), // "Transaction History" traducido
             onTap: () {
               Navigator.pushNamed(context, '/history');
             },
           ),
           ListTile(
             leading: Icon(Icons.person),
-            title: Text('Profile'),
+            title: Text(localizations.profile), // "Profile" traducido
             onTap: () {
               Navigator.pushNamed(context, '/profile');
             },
           ),
           ListTile(
             leading: Icon(Icons.help),
-            title: Text('Support'),
+            title: Text(localizations.support), // "Support" traducido
             onTap: () {
               Navigator.pushNamed(context, '/support');
             },
           ),
           ListTile(
             leading: Icon(Icons.chat),
-            title: Text('Chat'),
+            title: Text(localizations.chat), // "Chat" traducido
             onTap: () {
               Navigator.pushNamed(context, '/contacts');
             },
           ),
           ListTile(
             leading: Icon(Icons.logout),
-            title: Text('Log Out'),
+            title: Text(localizations.logOut), // "Log Out" traducido
             onTap: () async {
               SharedPreferences prefs = await SharedPreferences.getInstance();
               await prefs.remove('jwtToken');
@@ -263,13 +266,13 @@ class _HomePageState extends State<HomePage> {
   }
 
   // Sección de Noticias mejorada
-  Widget _buildNewsSection() {
+  Widget _buildNewsSection(AppLocalizations localizations) {
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Latest News',
+            localizations.latestNews, // "Latest News" traducido
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 10),
@@ -348,7 +351,7 @@ class _HomePageState extends State<HomePage> {
                                   // Usamos Expanded para permitir que el texto use el espacio disponible
                                   Expanded(
                                     child: Text(
-                                      'Published at: ${news.publishedAt}',
+                                      '${localizations.publishedAt}: ${news.publishedAt}', // "Published at" traducido
                                       style: TextStyle(
                                         fontSize: 12,
                                         color: Colors.grey[500],
@@ -378,6 +381,4 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
-
 }

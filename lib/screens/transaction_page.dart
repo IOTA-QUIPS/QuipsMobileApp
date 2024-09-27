@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quipsapp/services/transaction_service.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Para localizaciones
 
 class TransactionPage extends StatefulWidget {
   @override
@@ -29,9 +30,12 @@ class _TransactionPageState extends State<TransactionPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Obtener las traducciones desde el archivo de localización
+    var localizations = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Make a Transaction'),
+        title: Text(localizations.makeTransaction), // Localización de "Make a Transaction"
         backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
@@ -49,7 +53,7 @@ class _TransactionPageState extends State<TransactionPage> {
                 );
               }).toList(),
               decoration: InputDecoration(
-                labelText: 'Select Country',
+                labelText: localizations.selectCountry, // Localización de "Select Country"
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
@@ -66,8 +70,8 @@ class _TransactionPageState extends State<TransactionPage> {
               controller: _receiverPhoneNumberController,
               keyboardType: TextInputType.phone,
               decoration: InputDecoration(
-                labelText: 'Receiver Phone Number',
-                prefixText: _selectedCountryCode + " ", // Mostrar el código del país seleccionado
+                labelText: localizations.receiverPhoneNumber, // Localización de "Receiver Phone Number"
+                prefixText: _selectedCountryCode + " ",
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
@@ -79,7 +83,7 @@ class _TransactionPageState extends State<TransactionPage> {
               controller: _amountController,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
-                labelText: 'Amount',
+                labelText: localizations.amount, // Localización de "Amount"
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
@@ -117,13 +121,13 @@ class _TransactionPageState extends State<TransactionPage> {
                   });
                 } else {
                   setState(() {
-                    _successMessage = 'Transaction successful';
+                    _successMessage = localizations.transactionSuccessful; // Localización de "Transaction successful"
                   });
                   // Devuelve true para indicar éxito
                   Navigator.pop(context, true);
                 }
               },
-              child: Text('Make Transaction'),
+              child: Text(localizations.makeTransaction), // Localización de "Make Transaction"
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.symmetric(vertical: 16.0),
                 textStyle: TextStyle(fontSize: 18),

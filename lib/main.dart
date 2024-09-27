@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'; // Importación de localizaciones
+import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Importación de las localizaciones generadas
+import 'package:provider/provider.dart'; // Importa Provider para cambiar el idioma
+import 'providers/locale_provider.dart'; // Importa el LocaleProvider
 import 'package:quipsapp/screens/chat_history_page.dart';
 import 'package:quipsapp/screens/contact_list_page.dart';
 import 'package:quipsapp/screens/register_page.dart';
@@ -26,59 +30,80 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Banking App',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
-        useMaterial3: true,
-      ),
-      initialRoute: '/login',
-      routes: {
-        '/login': (context) => LoginPage(),
-        '/register': (context) => RegisterPage(),
-        '/home': (context) => HomePage(),
-        '/transaction': (context) => TransactionPage(),
-        '/confirmation': (context) => ConfirmationPage(),
-        '/history': (context) => TransactionHistoryPage(),
-        '/profile': (context) => UserProfilePage(),
-        '/settings': (context) => SettingsPage(),
-        '/support': (context) => SupportPage(),
-        '/contacts': (context) => ContactListPage(),
-        '/chatHistory': (context) => ChatHistoryPage(),
-        '/terms': (context) => TermsPage(),
-        '/admin': (context) => AdminHome('admin-token'),  // Admin Home
-        '/manage-news': (context) => ManageNews('admin-token'),  // Gestión de noticias
-        '/add-news': (context) => AddEditNews(token: 'admin-token', isEditing: false, onSave: () {}), // Agregar noticia
-      },
-      onGenerateRoute: (settings) {
-        if (settings.name == '/chat') {
-          final args = settings.arguments as Map<String, dynamic>; // Cambiar a Map<String, dynamic>
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => LocaleProvider()), // Proveedor para la localización
+      ],
+      child: Consumer<LocaleProvider>(
+        builder: (context, localeProvider, child) {
+          return MaterialApp(
+            title: 'Flutter Quips App',
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
+              useMaterial3: true,
+            ),
+            locale: localeProvider.locale, // Establece la localización desde el Provider
+            // Añadimos la configuración de idiomas soportados
+            localizationsDelegates: const [
+              AppLocalizations.delegate, // Delegado de las localizaciones generadas
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('en', ''), // Inglés
+              Locale('es', ''), // Español
+            ],
+            initialRoute: '/login',
+            routes: {
+              '/login': (context) => LoginPage(),
+              '/register': (context) => RegisterPage(),
+              '/home': (context) => HomePage(),
+              '/transaction': (context) => TransactionPage(),
+              '/confirmation': (context) => ConfirmationPage(),
+              '/history': (context) => TransactionHistoryPage(),
+              '/profile': (context) => UserProfilePage(),
+              '/settings': (context) => SettingsPage(),
+              '/support': (context) => SupportPage(),
+              '/contacts': (context) => ContactListPage(),
+              '/chatHistory': (context) => ChatHistoryPage(),
+              '/terms': (context) => TermsPage(),
+              '/admin': (context) => AdminHome('admin-token'),  // Admin Home
+              '/manage-news': (context) => ManageNews('admin-token'),  // Gestión de noticias
+              '/add-news': (context) => AddEditNews(token: 'admin-token', isEditing: false, onSave: () {}),
+            },
+            onGenerateRoute: (settings) {
+              if (settings.name == '/chat') {
+                final args = settings.arguments as Map<String, dynamic>;
 
-          return MaterialPageRoute(
-            builder: (context) {
-              return ChatPage(
-                senderUsername: args['senderUsername'] as String,
-                receiverUsername: args['receiverUsername'] as String,
-                senderId: args['senderId'] as String,
-                receiverId: args['receiverId'] as String,
-              );
+                return MaterialPageRoute(
+                  builder: (context) {
+                    return ChatPage(
+                      senderUsername: args['senderUsername'] as String,
+                      receiverUsername: args['receiverUsername'] as String,
+                      senderId: args['senderId'] as String,
+                      receiverId: args['receiverId'] as String,
+                    );
+                  },
+                );
+              } else if (settings.name == '/edit-news') {
+                final args = settings.arguments as Map<String, dynamic>;
+                return MaterialPageRoute(
+                  builder: (context) {
+                    return AddEditNews(
+                      token: args['token'] as String,
+                      isEditing: true,
+                      news: args['news'],
+                      onSave: args['onSave'] as VoidCallback,
+                    );
+                  },
+                );
+              }
+              return null; // En caso de que la ruta no coincida
             },
           );
-        } else if (settings.name == '/edit-news') {
-          final args = settings.arguments as Map<String, dynamic>;
-          return MaterialPageRoute(
-            builder: (context) {
-              return AddEditNews(
-                token: args['token'] as String,
-                isEditing: true,
-                news: args['news'],
-                onSave: args['onSave'] as VoidCallback,
-              );
-            },
-          );
-        }
-        return null; // En caso de que la ruta no coincida
-      },
+        },
+      ),
     );
   }
 }
