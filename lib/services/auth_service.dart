@@ -64,6 +64,28 @@ class AuthService {
     }
   }
 
+
+
+  // Método para guardar la clave secreta
+  Future<String?> setPin(String token, String pin) async {
+    final response = await http.post(
+      Uri.parse('http://10.0.2.2:8080/api/users/setPin'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(<String, String>{
+        'sixDigitPin': pin, // Ahora se envía el PIN dentro de un objeto JSON
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return null; // Éxito
+    } else {
+      return 'Error al configurar la clave';
+    }
+  }
+
   // Método para obtener información del usuario autenticado
   Future<Map<String, dynamic>?> getUserInfo(String token) async {
     try {

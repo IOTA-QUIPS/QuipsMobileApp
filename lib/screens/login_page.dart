@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quipsapp/services/auth_service.dart';
 import '../admin/admin_home.dart';
 import 'home_page.dart';
+import 'set_pin_page.dart'; // Importa la página para configurar la clave secreta
 import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Importa localizaciones
 
 class LoginPage extends StatefulWidget {
@@ -97,10 +98,26 @@ class _LoginPageState extends State<LoginPage> {
                     // Segunda solicitud para obtener la información completa del usuario (/me)
                     final userInfo = await _authService.getUserInfo(token);
 
+                    // Si el usuario ya configuró la clave secreta, guardarla en SharedPreferences
+                    if (userInfo != null && userInfo.containsKey('sixDigitPin')) {
+                      final String? sixDigitPin = userInfo['sixDigitPin'];
+                      if (sixDigitPin != null && sixDigitPin.isNotEmpty) {
+                        await prefs.setString('sixDigitPin', sixDigitPin);
+                      } else {
+                        // Si el usuario no tiene la clave secreta configurada, redirigirlo a la pantalla de configuración
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SetPinPage(token), // Redirige a SetPinPage
+                          ),
+                        );
+                        return;
+                      }
+                    }
+
+                    // Verificar los roles del usuario y redirigir
                     if (userInfo != null && userInfo.containsKey('roles')) {
                       final roles = userInfo['roles'];
-
-                      // Verificar los roles del usuario
                       if (roles.contains('ROLE_ADMIN')) {
                         // Redirigir al Admin Dashboard
                         Navigator.pushReplacement(

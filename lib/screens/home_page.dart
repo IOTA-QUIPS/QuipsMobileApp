@@ -6,6 +6,8 @@ import 'package:quipsapp/services/news_service.dart';
 import 'package:quipsapp/model/news_model.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Para localizaciones
+import 'package:quipsapp/services/inactivity_service.dart'; // Importa el servicio de inactividad
+import 'pin_login_page.dart'; // Importa la pantalla de ingreso con clave de 6 dígitos
 
 class HomePage extends StatefulWidget {
   @override
@@ -18,12 +20,34 @@ class _HomePageState extends State<HomePage> {
   List<News> newsList = [];
   final AuthService _authService = AuthService();
   late NewsService _newsService;
+  late InactivityService _inactivityService; // Declarar el servicio de inactividad
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
     _loadNewsData();
+
+    // Inicializar el servicio de inactividad
+    _inactivityService = InactivityService(
+      timeoutInSeconds: 15, // Tiempo de inactividad en segundos
+      onInactivityDetected: _handleInactivity, // Manejar la inactividad
+    );
+    _inactivityService.start(); // Iniciar la detección de inactividad
+  }
+
+  @override
+  void dispose() {
+    _inactivityService.dispose(); // Cancelar el temporizador cuando se cierre la pantalla
+    super.dispose();
+  }
+
+  // Función para manejar la inactividad (redirigir a PinLoginPage)
+  void _handleInactivity() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => PinLoginPage()), // Redirige a la pantalla de ingreso con PIN
+    );
   }
 
   Future<void> _loadUserData() async {
@@ -36,7 +60,6 @@ class _HomePageState extends State<HomePage> {
       if (response != null && !response.containsKey('error')) {
         setState(() {
           userName = response['firstName'] + " " + response['lastName'];
-          // Acceder a coins directamente del nivel superior del JSON
           balance = response['coins'] != null ? response['coins'].toDouble() : 0.0;
         });
       } else {
@@ -68,33 +91,38 @@ class _HomePageState extends State<HomePage> {
     // Obtener las traducciones desde el archivo de localización
     var localizations = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Quips App'),
-        backgroundColor: Colors.blueAccent,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.settings),
-            onPressed: () {
-              Navigator.pushNamed(context, '/settings');
-            },
-          ),
-        ],
-      ),
-      drawer: _buildDrawer(localizations),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildHeader(localizations),
-            SizedBox(height: 20),
-            _buildBalanceCard(localizations),
-            SizedBox(height: 20),
-            _buildActionButtons(localizations),
-            SizedBox(height: 20),
-            _buildNewsSection(localizations),
+    // Envuelve la pantalla completa en GestureDetector para capturar la interacción del usuario
+    return GestureDetector(
+      onTap: _inactivityService.resetTimer, // Reiniciar el temporizador en interacción
+      onPanDown: (_) => _inactivityService.resetTimer(), // Reiniciar al hacer scroll o deslizar
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Quips App'),
+          backgroundColor: Colors.blueAccent,
+          actions: [
+            IconButton(
+              icon: Icon(Icons.settings),
+              onPressed: () {
+                Navigator.pushNamed(context, '/settings');
+              },
+            ),
           ],
+        ),
+        drawer: _buildDrawer(localizations),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildHeader(localizations),
+              SizedBox(height: 20),
+              _buildBalanceCard(localizations),
+              SizedBox(height: 20),
+              _buildActionButtons(localizations),
+              SizedBox(height: 20),
+              _buildNewsSection(localizations),
+            ],
+          ),
         ),
       ),
     );
@@ -304,7 +332,7 @@ class _HomePageState extends State<HomePage> {
                           child: Image.network(
                             news.imageUrl,
                             height: 80,
-                            width: 80,  // Limitar el ancho de la imagen
+                            width: 80, // Limitar el ancho de la imagen
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
                               return Icon(
@@ -332,7 +360,7 @@ class _HomePageState extends State<HomePage> {
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
-                                overflow: TextOverflow.ellipsis,  // Previene overflow
+                                overflow: TextOverflow.ellipsis, // Previene overflow
                               ),
                               SizedBox(height: 5),
                               Text(

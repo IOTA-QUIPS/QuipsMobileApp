@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart'; // Importación de localizaciones
-import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Importación de las localizaciones generadas
-import 'package:provider/provider.dart'; // Importa Provider para cambiar el idioma
-import 'providers/locale_provider.dart'; // Importa el LocaleProvider
-import 'package:quipsapp/screens/chat_history_page.dart';
-import 'package:quipsapp/screens/contact_list_page.dart';
-import 'package:quipsapp/screens/register_page.dart';
-import 'package:quipsapp/screens/terms_page.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
+import 'providers/locale_provider.dart';
+import 'screens/splash_screen.dart'; // Importa la pantalla SplashScreen
+import 'screens/chat_history_page.dart';
+import 'screens/contact_list_page.dart';
+import 'screens/register_page.dart';
+import 'screens/terms_page.dart';
 import 'screens/login_page.dart';
 import 'screens/home_page.dart';
 import 'screens/transaction_page.dart';
@@ -15,10 +16,10 @@ import 'screens/transaction_history_page.dart';
 import 'screens/user_profile_page.dart';
 import 'screens/settings_page.dart';
 import 'screens/support_page.dart';
-import 'screens/chat_page.dart'; // Pantalla de chat
-import 'admin/admin_home.dart'; // Pantalla de inicio de admin
-import 'admin/manage_news.dart'; // Pantalla para gestión de noticias
-import 'admin/add_edit_news.dart'; // Pantalla para agregar/editar noticias
+import 'screens/chat_page.dart';
+import 'admin/admin_home.dart';
+import 'admin/manage_news.dart';
+import 'admin/add_edit_news.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,7 +33,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => LocaleProvider()), // Proveedor para la localización
+        ChangeNotifierProvider(create: (_) => LocaleProvider()),
       ],
       child: Consumer<LocaleProvider>(
         builder: (context, localeProvider, child) {
@@ -42,20 +43,20 @@ class MyApp extends StatelessWidget {
               colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
               useMaterial3: true,
             ),
-            locale: localeProvider.locale, // Establece la localización desde el Provider
-            // Añadimos la configuración de idiomas soportados
+            locale: localeProvider.locale,
             localizationsDelegates: const [
-              AppLocalizations.delegate, // Delegado de las localizaciones generadas
+              AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
             supportedLocales: const [
-              Locale('en', ''), // Inglés
-              Locale('es', ''), // Español
+              Locale('en', ''),
+              Locale('es', ''),
             ],
-            initialRoute: '/login',
+            initialRoute: '/',  // Cambiamos la ruta inicial a '/'
             routes: {
+              '/': (context) => SplashScreen(), // Pantalla de verificación de sesión
               '/login': (context) => LoginPage(),
               '/register': (context) => RegisterPage(),
               '/home': (context) => HomePage(),
@@ -68,8 +69,8 @@ class MyApp extends StatelessWidget {
               '/contacts': (context) => ContactListPage(),
               '/chatHistory': (context) => ChatHistoryPage(),
               '/terms': (context) => TermsPage(),
-              '/admin': (context) => AdminHome('admin-token'),  // Admin Home
-              '/manage-news': (context) => ManageNews('admin-token'),  // Gestión de noticias
+              '/admin': (context) => AdminHome('admin-token'),
+              '/manage-news': (context) => ManageNews('admin-token'),
               '/add-news': (context) => AddEditNews(token: 'admin-token', isEditing: false, onSave: () {}),
             },
             onGenerateRoute: (settings) {
@@ -99,7 +100,7 @@ class MyApp extends StatelessWidget {
                   },
                 );
               }
-              return null; // En caso de que la ruta no coincida
+              return null;
             },
           );
         },
