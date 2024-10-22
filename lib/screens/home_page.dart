@@ -30,7 +30,7 @@ class _HomePageState extends State<HomePage> {
 
     // Inicializar el servicio de inactividad
     _inactivityService = InactivityService(
-      timeoutInSeconds: 15, // Tiempo de inactividad en segundos
+      timeoutInSeconds: 300, // Tiempo de inactividad en segundos
       onInactivityDetected: _handleInactivity, // Manejar la inactividad
     );
     _inactivityService.start(); // Iniciar la detección de inactividad

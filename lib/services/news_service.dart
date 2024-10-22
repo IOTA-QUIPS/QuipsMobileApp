@@ -19,12 +19,15 @@ class NewsService {
     );
 
     if (response.statusCode == 200) {
-      List<dynamic> newsJson = json.decode(response.body);
+      // Decodifica correctamente los caracteres especiales usando utf8.decode
+      String jsonResponse = utf8.decode(response.bodyBytes);
+      List<dynamic> newsJson = json.decode(jsonResponse);
       return newsJson.map((json) => News.fromJson(json)).toList();
     } else {
       throw Exception('Error al cargar las noticias');
     }
   }
+
 
   // Agregar una nueva noticia (solo admin) con imageUrl incluido
   Future<void> addNews(String title, String content, String imageUrl) async {
