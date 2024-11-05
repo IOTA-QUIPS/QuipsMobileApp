@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../services/chat_service.dart';  // Servicio de API HTTP para el chat
+import '../services/chat_service.dart'; // Servicio de API HTTP para el chat
 
 class ChatPage extends StatefulWidget {
   final String senderId;
   final String receiverId;
   final String senderUsername;
-  final String receiverUsername;  // Ahora este será el nombre recuperado del teléfono
+  final String receiverUsername;
 
   ChatPage({
     required this.senderId,
@@ -39,8 +39,8 @@ class _ChatPageState extends State<ChatPage> {
 
     if (response != null && !response.containsKey('error')) {
       setState(() {
-        conversationId = response['id'].toString();  // Guardar el ID de la conversación
-        _loadMessages();  // Cargar los mensajes previos
+        conversationId = response['id'].toString(); // Guardar el ID de la conversación
+        _loadMessages(); // Cargar los mensajes previos
       });
     } else {
       print('Error al crear o recuperar la conversación');
@@ -76,7 +76,7 @@ class _ChatPageState extends State<ChatPage> {
         setState(() {
           _messages.add('${widget.senderUsername}: ${_controller.text}');
         });
-        _controller.clear();  // Limpiar el campo de entrada de texto
+        _controller.clear(); // Limpiar el campo de entrada de texto
       } else {
         print('Error al enviar el mensaje');
       }
@@ -87,7 +87,7 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Chat with ${widget.receiverUsername}'),  // Mostramos el nombre del contacto del teléfono
+        title: Text('Chat with ${widget.receiverUsername}'),
         backgroundColor: Colors.blueAccent,
       ),
       body: Column(
@@ -125,8 +125,12 @@ class _ChatPageState extends State<ChatPage> {
                     decoration: InputDecoration(
                       hintText: 'Enter a message',
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide.none,
                       ),
+                      filled: true,
+                      fillColor: Colors.grey[200],
+                      contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                     ),
                   ),
                 ),

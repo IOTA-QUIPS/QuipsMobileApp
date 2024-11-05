@@ -43,5 +43,7 @@
   "acceptTermsAndConditions": "Acepto los términos y condiciones",
   "mustAcceptTerms": "Debes aceptar los términos y condiciones",
   "register": "Registrarse",
-  "alreadyHaveAccountLogin": "¿Ya tienes una cuenta? Inicia sesión"
+  "alreadyHaveAccountLogin": "¿Ya tienes una cuenta? Inicia sesión",
+  "contactList": "Lista de Contactos",
+  "you": "Tú"
 }

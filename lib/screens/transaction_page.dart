@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quipsapp/services/transaction_service.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Para localizaciones
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TransactionPage extends StatefulWidget {
   @override
@@ -30,124 +30,196 @@ class _TransactionPageState extends State<TransactionPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Obtener las traducciones desde el archivo de localización
     var localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        title: Text(localizations.makeTransaction), // Localización de "Make a Transaction"
-        backgroundColor: Colors.blueAccent,
+        title: Text(localizations.makeTransaction),
+        backgroundColor: Colors.black,
+        elevation: 0,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Selector de código de país
-            DropdownButtonFormField<String>(
-              value: _selectedCountryCode,
-              items: _countryCodes.map((country) {
-                return DropdownMenuItem<String>(
-                  value: country['code'],
-                  child: Text('${country['name']} (${country['code']})'),
-                );
-              }).toList(),
-              decoration: InputDecoration(
-                labelText: localizations.selectCountry, // Localización de "Select Country"
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Selector de código de país con estilo premium
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey[900],
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black45,
+                      blurRadius: 10,
+                      offset: Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: DropdownButtonFormField<String>(
+                  value: _selectedCountryCode,
+                  dropdownColor: Colors.grey[900],
+                  iconEnabledColor: Colors.amber[300],
+                  style: TextStyle(color: Colors.white),
+                  items: _countryCodes.map((country) {
+                    return DropdownMenuItem<String>(
+                      value: country['code'],
+                      child: Text(
+                        '${country['name']} (${country['code']})',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    );
+                  }).toList(),
+                  decoration: InputDecoration(
+                    labelText: localizations.selectCountry,
+                    labelStyle: TextStyle(color: Colors.grey[600]),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedCountryCode = value!;
+                    });
+                  },
                 ),
               ),
-              onChanged: (value) {
-                setState(() {
-                  _selectedCountryCode = value!;
-                });
-              },
-            ),
-            SizedBox(height: 20),
-            // Campo para el número de teléfono del destinatario
-            TextFormField(
-              controller: _receiverPhoneNumberController,
-              keyboardType: TextInputType.phone,
-              decoration: InputDecoration(
-                labelText: localizations.receiverPhoneNumber, // Localización de "Receiver Phone Number"
+              SizedBox(height: 20),
+
+              // Campo para el número de teléfono del destinatario con estilo premium
+              _buildTextField(
+                controller: _receiverPhoneNumberController,
+                hintText: localizations.receiverPhoneNumber,
+                icon: Icons.phone,
                 prefixText: _selectedCountryCode + " ",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
+              ),
+              SizedBox(height: 20),
+
+              // Campo para la cantidad a transferir con estilo premium
+              _buildTextField(
+                controller: _amountController,
+                hintText: localizations.amount,
+                icon: Icons.attach_money,
+                keyboardType: TextInputType.number,
+              ),
+              SizedBox(height: 40),
+
+              // Botón de transacción mejorado
+              _isLoading
+                  ? Center(child: CircularProgressIndicator(color: Colors.amber[300]))
+                  : ElevatedButton(
+                onPressed: _makeTransaction,
+                child: Text(localizations.makeTransaction),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.amber[300],
+                  foregroundColor: Colors.black,
+                  padding: EdgeInsets.symmetric(vertical: 16.0),
+                  textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  shadowColor: Colors.amber[100],
+                  elevation: 6,
                 ),
               ),
-            ),
-            SizedBox(height: 20),
-            // Campo para la cantidad a transferir
-            TextFormField(
-              controller: _amountController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: localizations.amount, // Localización de "Amount"
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
+              SizedBox(height: 20),
+
+              // Mensajes de error y éxito
+              if (_errorMessage.isNotEmpty)
+                Text(
+                  _errorMessage,
+                  style: TextStyle(color: Colors.redAccent, fontSize: 16),
+                  textAlign: TextAlign.center,
                 ),
-              ),
-            ),
-            SizedBox(height: 40),
-            // Botón de transacción
-            _isLoading
-                ? Center(child: CircularProgressIndicator())
-                : ElevatedButton(
-              onPressed: () async {
-                setState(() {
-                  _isLoading = true;
-                  _errorMessage = '';
-                  _successMessage = '';
-                });
-
-                // Concatenar el código del país y el número de teléfono
-                String receiverPhoneNumber = _selectedCountryCode + _receiverPhoneNumberController.text;
-
-                // Enviar la transacción
-                final response = await _transactionService.makeTransaction(
-                  'sender_phone_number',  // Obtén el número de teléfono del usuario logueado
-                  receiverPhoneNumber,    // Número de teléfono con el código del país
-                  double.parse(_amountController.text),
-                );
-
-                setState(() {
-                  _isLoading = false;
-                });
-
-                if (response != null && response.containsKey('error')) {
-                  setState(() {
-                    _errorMessage = response['error'];
-                  });
-                } else {
-                  setState(() {
-                    _successMessage = localizations.transactionSuccessful; // Localización de "Transaction successful"
-                  });
-                  // Devuelve true para indicar éxito
-                  Navigator.pop(context, true);
-                }
-              },
-              child: Text(localizations.makeTransaction), // Localización de "Make Transaction"
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 16.0),
-                textStyle: TextStyle(fontSize: 18),
-              ),
-            ),
-            if (_errorMessage.isNotEmpty)
-              Text(
-                _errorMessage,
-                style: TextStyle(color: Colors.red),
-                textAlign: TextAlign.center,
-              ),
-            if (_successMessage.isNotEmpty)
-              Text(
-                _successMessage,
-                style: TextStyle(color: Colors.green),
-                textAlign: TextAlign.center,
-              ),
-          ],
+              if (_successMessage.isNotEmpty)
+                Text(
+                  _successMessage,
+                  style: TextStyle(color: Colors.greenAccent, fontSize: 16),
+                  textAlign: TextAlign.center,
+                ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hintText,
+    required IconData icon,
+    TextInputType keyboardType = TextInputType.text,
+    String? prefixText,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[900],
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black45,
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: keyboardType,
+        style: TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          hintText: hintText,
+          hintStyle: TextStyle(color: Colors.grey[600]),
+          prefixIcon: Icon(icon, color: Colors.amber[300]),
+          prefixText: prefixText,
+          prefixStyle: TextStyle(color: Colors.white),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.0),
+            borderSide: BorderSide.none,
+          ),
+          filled: true,
+          fillColor: Colors.grey[900],
+          contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _makeTransaction() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+      _successMessage = '';
+    });
+
+    try {
+      final response = await _transactionService.makeTransaction(
+        'sender_phone_number',  // Reemplaza con el número de teléfono del usuario logueado
+        _selectedCountryCode + _receiverPhoneNumberController.text, // Número de teléfono completo
+        double.parse(_amountController.text),
+      );
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (response != null && response.containsKey('error')) {
+        setState(() {
+          _errorMessage = response['error'];
+        });
+      } else {
+        setState(() {
+          var localizations = AppLocalizations.of(context)!;
+          _successMessage = localizations.transactionSuccessful;
+        });
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = "Error al realizar la transacción";
+      });
+    }
   }
 }
