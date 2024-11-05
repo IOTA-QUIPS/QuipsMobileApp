@@ -20,11 +20,10 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Obtener las traducciones desde el archivo de localización
     var localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.black,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -32,23 +31,34 @@ class _LoginPageState extends State<LoginPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Logo
+              Image.asset(
+                'assets/isotipo.png', // Ajusta la ruta según tu configuración
+                height: 100,
+              ),
+              SizedBox(height: 20),
               Text(
-                localizations.welcomeBack, // Localización de "Welcome Back"
+                localizations.welcomeBack,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blueAccent,
+                  color: Colors.amber[300],
                 ),
               ),
               SizedBox(height: 20),
               TextFormField(
                 controller: _usernameController,
+                style: TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: localizations.email, // Localización de "Email"
-                  prefixIcon: Icon(Icons.email),
+                  filled: true,
+                  fillColor: Colors.grey[900],
+                  hintText: localizations.email,
+                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  prefixIcon: Icon(Icons.email, color: Colors.amber[300]),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
+                    borderSide: BorderSide.none,
                   ),
                 ),
               ),
@@ -56,17 +66,22 @@ class _LoginPageState extends State<LoginPage> {
               TextFormField(
                 controller: _passwordController,
                 obscureText: true,
+                style: TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: localizations.password, // Localización de "Password"
-                  prefixIcon: Icon(Icons.lock),
+                  filled: true,
+                  fillColor: Colors.grey[900],
+                  hintText: localizations.password,
+                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  prefixIcon: Icon(Icons.lock, color: Colors.amber[300]),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
+                    borderSide: BorderSide.none,
                   ),
                 ),
               ),
               SizedBox(height: 20),
               _isLoading
-                  ? Center(child: CircularProgressIndicator())
+                  ? Center(child: CircularProgressIndicator(color: Colors.amber[300]))
                   : ElevatedButton(
                 onPressed: () async {
                   setState(() {
@@ -74,7 +89,6 @@ class _LoginPageState extends State<LoginPage> {
                     _errorMessage = '';
                   });
 
-                  // Realiza la solicitud de login y obtiene el token si es exitoso
                   final response = await _authService.login(
                     _usernameController.text,
                     _passwordController.text,
@@ -85,41 +99,34 @@ class _LoginPageState extends State<LoginPage> {
                   });
 
                   if (response != null && response.containsKey('error')) {
-                    // Muestra el mensaje de error si ocurre
                     setState(() {
                       _errorMessage = response['error'];
                     });
                   } else if (response != null && response.containsKey('token')) {
-                    // Si el login es exitoso, guarda el token en SharedPreferences
                     final token = response['token'];
                     SharedPreferences prefs = await SharedPreferences.getInstance();
                     await prefs.setString('jwtToken', token);
 
-                    // Segunda solicitud para obtener la información completa del usuario (/me)
                     final userInfo = await _authService.getUserInfo(token);
 
-                    // Si el usuario ya configuró la clave secreta, guardarla en SharedPreferences
                     if (userInfo != null && userInfo.containsKey('sixDigitPin')) {
                       final String? sixDigitPin = userInfo['sixDigitPin'];
                       if (sixDigitPin != null && sixDigitPin.isNotEmpty) {
                         await prefs.setString('sixDigitPin', sixDigitPin);
                       } else {
-                        // Si el usuario no tiene la clave secreta configurada, redirigirlo a la pantalla de configuración
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => SetPinPage(token), // Redirige a SetPinPage
+                            builder: (context) => SetPinPage(token),
                           ),
                         );
                         return;
                       }
                     }
 
-                    // Verificar los roles del usuario y redirigir
                     if (userInfo != null && userInfo.containsKey('roles')) {
                       final roles = userInfo['roles'];
                       if (roles.contains('ROLE_ADMIN')) {
-                        // Redirigir al Admin Dashboard
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
@@ -127,7 +134,6 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         );
                       } else {
-                        // Redirigir a la HomePage (usuarios normales)
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
@@ -136,17 +142,17 @@ class _LoginPageState extends State<LoginPage> {
                         );
                       }
                     } else {
-                      // Manejar error al obtener la información del usuario
                       setState(() {
-                        _errorMessage = localizations.errorFetchingUserInfo; // Localización de error
+                        _errorMessage = localizations.errorFetchingUserInfo;
                       });
                     }
                   }
                 },
-                child: Text(localizations.login), // Localización de "Login"
+                child: Text(localizations.login),
                 style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.black, backgroundColor: Colors.amber[300],
                   padding: EdgeInsets.symmetric(vertical: 16.0),
-                  textStyle: TextStyle(fontSize: 18),
+                  textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.0),
                   ),
@@ -156,7 +162,7 @@ class _LoginPageState extends State<LoginPage> {
               if (_errorMessage.isNotEmpty)
                 Text(
                   _errorMessage,
-                  style: TextStyle(color: Colors.red),
+                  style: TextStyle(color: Colors.redAccent),
                   textAlign: TextAlign.center,
                 ),
               SizedBox(height: 20),
@@ -165,8 +171,8 @@ class _LoginPageState extends State<LoginPage> {
                   Navigator.pushNamed(context, '/register');
                 },
                 child: Text(
-                  localizations.dontHaveAccountSignUp, // Localización de "Don't have an account? Sign Up"
-                  style: TextStyle(color: Colors.blueAccent),
+                  localizations.dontHaveAccountSignUp,
+                  style: TextStyle(color: Colors.amber[300]),
                 ),
               ),
             ],
