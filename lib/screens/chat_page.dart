@@ -53,9 +53,13 @@ class _ChatPageState extends State<ChatPage> {
 
       if (messagesResponse != null) {
         setState(() {
-          _messages = messagesResponse
-              .map<String>((msg) => "${widget.receiverUsername}: ${msg['content']}")
-              .toList();
+          _messages = messagesResponse.map<String>((msg) {
+            // Determine el remitente basado en el senderId del mensaje
+            String sender = msg['sender']['id'].toString() == widget.senderId
+                ? '${widget.senderUsername} (You)'
+                : widget.receiverUsername;
+            return "$sender: ${msg['content']}";
+          }).toList();
         });
       } else {
         print('Error al cargar los mensajes');
@@ -74,7 +78,7 @@ class _ChatPageState extends State<ChatPage> {
 
       if (response != null && !response.containsKey('error')) {
         setState(() {
-          _messages.add('${widget.senderUsername}: ${_controller.text}');
+          _messages.add('${widget.senderUsername} (You): ${_controller.text}'); // Añadir mensaje enviado por el usuario
         });
         _controller.clear(); // Limpiar el campo de entrada de texto
       } else {
@@ -88,7 +92,7 @@ class _ChatPageState extends State<ChatPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Chat with ${widget.receiverUsername}'),
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Colors.black,
       ),
       body: Column(
         children: [
@@ -96,7 +100,7 @@ class _ChatPageState extends State<ChatPage> {
             child: ListView.builder(
               itemCount: _messages.length,
               itemBuilder: (context, index) {
-                bool isSender = _messages[index].startsWith(widget.senderUsername);
+                bool isSender = _messages[index].startsWith('${widget.senderUsername} (You)');
                 return Align(
                   alignment: isSender ? Alignment.centerRight : Alignment.centerLeft,
                   child: Container(
@@ -122,15 +126,25 @@ class _ChatPageState extends State<ChatPage> {
                 Expanded(
                   child: TextField(
                     controller: _controller,
+                    style: TextStyle(color: Colors.white), // Color del texto
                     decoration: InputDecoration(
                       hintText: 'Enter a message',
+                      hintStyle: TextStyle(color: Colors.grey[400]), // Color del hint
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30),
                         borderSide: BorderSide.none,
                       ),
                       filled: true,
-                      fillColor: Colors.grey[200],
-                      contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                      fillColor: Colors.grey[800], // Color de fondo del campo
+                      contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20), // Padding
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide(color: Colors.blueAccent.withOpacity(0.5), width: 1), // Borde sutil
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide(color: Colors.blueAccent, width: 2), // Borde al enfocar
+                      ),
                     ),
                   ),
                 ),

@@ -88,11 +88,11 @@ class _ContactListPageState extends State<ContactListPage> {
           future: _contactsFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
+              return Center(child: CircularProgressIndicator(color: Colors.amber[300]));
             } else if (snapshot.hasError) {
-              return Center(child: Text('Error al cargar contactos'));
+              return Center(child: Text('Error al cargar contactos', style: TextStyle(color: Colors.red)));
             } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Center(child: Text('No hay usuarios disponibles'));
+              return Center(child: Text('No hay usuarios disponibles', style: TextStyle(color: Colors.white)));
             } else {
               final contacts = snapshot.data!;
               return ListView.builder(
@@ -109,6 +109,7 @@ class _ContactListPageState extends State<ContactListPage> {
                   return Card(
                     margin: EdgeInsets.symmetric(vertical: 8),
                     color: Colors.grey[900],
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                     child: ListTile(
                       title: Text(contactName, style: TextStyle(color: Colors.white)), // Nombre del contacto
                       subtitle: Text(phoneNumber, style: TextStyle(color: Colors.grey[400])), // Número de teléfono
