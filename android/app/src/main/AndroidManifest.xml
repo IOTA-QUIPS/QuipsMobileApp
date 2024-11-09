@@ -8,7 +8,7 @@
 
 
     <application
-        android:label="quipsapp"
+        android:label="Quip"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

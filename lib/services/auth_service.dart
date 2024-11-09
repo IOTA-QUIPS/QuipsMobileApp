@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AuthService {
-  final String loginApiUrl = 'http://10.0.2.2:8080/api/users/login'; // Ajusta la IP si es necesario
-  final String registerApiUrl = 'http://10.0.2.2:8080/api/users'; // Endpoint para el registro
-  final String userInfoApiUrl = 'http://10.0.2.2:8080/api/users/me'; // Endpoint para obtener información del usuario
+  final String loginApiUrl = 'http://34.122.251.215:8080/api/users/login'; // Ajusta la IP si es necesario
+  final String registerApiUrl = 'http://34.122.251.215:8080/api/users'; // Endpoint para el registro
+  final String userInfoApiUrl = 'http://34.122.251.215:8080/api/users/me'; // Endpoint para obtener información del usuario
 
   // Método para hacer login
   Future<Map<String, dynamic>?> login(String username, String password) async {
@@ -20,15 +20,18 @@ class AuthService {
         }),
       );
 
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
       if (response.statusCode == 200) {
-        // Login exitoso, parsear la respuesta como JSON
-        return jsonDecode(response.body); // Puede contener información del usuario
+        return jsonDecode(response.body);
       } else if (response.statusCode == 400) {
         return {'error': 'Invalid username or password'};
       } else {
         return {'error': 'An error occurred. Please try again later.'};
       }
     } catch (e) {
+      print('Exception: $e');
       return {'error': 'Could not connect to the server. Please check your connection.'};
     }
   }
@@ -69,7 +72,7 @@ class AuthService {
   // Método para guardar la clave secreta
   Future<String?> setPin(String token, String pin) async {
     final response = await http.post(
-      Uri.parse('http://10.0.2.2:8080/api/users/setPin'),
+      Uri.parse('http://34.122.251.215:8080/api/users/setPin'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $token',

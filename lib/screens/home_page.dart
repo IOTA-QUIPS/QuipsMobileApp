@@ -153,7 +153,7 @@ class _HomePageState extends State<HomePage> {
                   style: TextStyle(fontSize: 20, color: Colors.grey[400]),
                 ),
                 Text(
-                  '\$$balance',
+                  'Q! $balance',
                   style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.amber[300]),
                 ),
               ],
@@ -244,7 +244,7 @@ class _HomePageState extends State<HomePage> {
               style: TextStyle(color: Colors.amber[300], fontSize: 24),
             ),
           ),
-          _buildDrawerItem(Icons.account_balance_wallet, localizations.yourBalance, '\$$balance'),
+          _buildDrawerItem(Icons.account_balance_wallet, localizations.yourBalance, '$balance'),
           _buildDrawerItem(Icons.history, localizations.transactionHistory, '', onTap: () {
             Navigator.pushNamed(context, '/history');
           }),

@@ -1,5 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import '../services/chat_service.dart'; // Servicio de API HTTP para el chat
+import '../services/chat_service.dart';
 
 class ChatPage extends StatefulWidget {
   final String senderId;
@@ -29,6 +30,20 @@ class _ChatPageState extends State<ChatPage> {
     super.initState();
     chatApiService = ChatApiService();
     _initializeConversation();
+
+    // Configura STOMP y define la función de recepción de mensajes
+    chatApiService.initializeStomp(
+      widget.senderId,
+      widget.receiverId,
+          (messageData) {
+        setState(() {
+          String sender = messageData['senderId'].toString() == widget.senderId
+              ? '${widget.senderUsername} (You)'
+              : widget.receiverUsername;
+          _messages.add("$sender: ${messageData['content']}");
+        });
+      },
+    );
   }
 
   Future<void> _initializeConversation() async {
@@ -39,8 +54,8 @@ class _ChatPageState extends State<ChatPage> {
 
     if (response != null && !response.containsKey('error')) {
       setState(() {
-        conversationId = response['id'].toString(); // Guardar el ID de la conversación
-        _loadMessages(); // Cargar los mensajes previos
+        conversationId = response['id'].toString();
+        _loadMessages();
       });
     } else {
       print('Error al crear o recuperar la conversación');
@@ -54,7 +69,6 @@ class _ChatPageState extends State<ChatPage> {
       if (messagesResponse != null) {
         setState(() {
           _messages = messagesResponse.map<String>((msg) {
-            // Determine el remitente basado en el senderId del mensaje
             String sender = msg['sender']['id'].toString() == widget.senderId
                 ? '${widget.senderUsername} (You)'
                 : widget.receiverUsername;
@@ -67,24 +81,25 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-  void _sendMessage() async {
+  void _sendMessage() {
     if (_controller.text.isNotEmpty && conversationId != null) {
-      final response = await chatApiService.sendMessage(
+      // Envía el mensaje a través de STOMP sin añadirlo directamente a la lista de mensajes
+      chatApiService.sendMessage(
         conversationId!,
         widget.senderId,
         widget.receiverId,
         _controller.text,
       );
 
-      if (response != null && !response.containsKey('error')) {
-        setState(() {
-          _messages.add('${widget.senderUsername} (You): ${_controller.text}'); // Añadir mensaje enviado por el usuario
-        });
-        _controller.clear(); // Limpiar el campo de entrada de texto
-      } else {
-        print('Error al enviar el mensaje');
-      }
+      // Limpia el campo de entrada después de enviar el mensaje
+      _controller.clear();
     }
+  }
+
+  @override
+  void dispose() {
+    chatApiService.deactivateStomp();
+    super.dispose();
   }
 
   @override
@@ -126,24 +141,24 @@ class _ChatPageState extends State<ChatPage> {
                 Expanded(
                   child: TextField(
                     controller: _controller,
-                    style: TextStyle(color: Colors.white), // Color del texto
+                    style: TextStyle(color: Colors.white),
                     decoration: InputDecoration(
                       hintText: 'Enter a message',
-                      hintStyle: TextStyle(color: Colors.grey[400]), // Color del hint
+                      hintStyle: TextStyle(color: Colors.grey[400]),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30),
                         borderSide: BorderSide.none,
                       ),
                       filled: true,
-                      fillColor: Colors.grey[800], // Color de fondo del campo
-                      contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20), // Padding
+                      fillColor: Colors.grey[800],
+                      contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30),
-                        borderSide: BorderSide(color: Colors.blueAccent.withOpacity(0.5), width: 1), // Borde sutil
+                        borderSide: BorderSide(color: Colors.blueAccent.withOpacity(0.5), width: 1),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30),
-                        borderSide: BorderSide(color: Colors.blueAccent, width: 2), // Borde al enfocar
+                        borderSide: BorderSide(color: Colors.blueAccent, width: 2),
                       ),
                     ),
                   ),
