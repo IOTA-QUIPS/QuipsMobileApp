@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../model/news_model.dart';
 
 class NewsService {
-  final String apiUrl = 'http://34.122.251.215:8080/api/news';
+  final String apiUrl = 'https://quips-backend-production.up.railway.app/api/news';
   final String token;
 
   NewsService(this.token);
