@@ -1,12 +1,14 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import '../model/news_model.dart';
 
 class NewsService {
-  final String apiUrl = 'https://quips-backend-production.up.railway.app/api/news';
+  final String apiUrl = 'http://10.0.2.2:8080/api/news';
   final String token;
 
   NewsService(this.token);
+
 
   // Obtener todas las noticias
   Future<List<News>> getAllNews() async {
@@ -28,6 +30,23 @@ class NewsService {
     }
   }
 
+  // Obtener el detalle de una noticia por su ID
+  Future<News?> getNewsById(int id) async {
+    final response = await http.get(
+      Uri.parse('$apiUrl/$id'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      String jsonResponse = utf8.decode(response.bodyBytes);
+      return News.fromJson(json.decode(jsonResponse));
+    } else {
+      throw Exception('Error al cargar la noticia con ID $id');
+    }
+  }
 
   // Agregar una nueva noticia (solo admin) con imageUrl incluido
   Future<void> addNews(String title, String content, String imageUrl) async {

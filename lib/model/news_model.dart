@@ -1,16 +1,18 @@
+import 'package:intl/intl.dart'; // Asegúrate de importar intl para el formateo de fechas
+
 class News {
   final int id;
   final String title;
   final String content;
   final DateTime publishedAt;
-  final String imageUrl;  // Nuevo campo para la URL de la imagen
+  final String imageUrl;
 
   News({
     required this.id,
     required this.title,
     required this.content,
     required this.publishedAt,
-    required this.imageUrl,  // Asegúrate de requerir la URL de la imagen
+    required this.imageUrl,
   });
 
   // Constructor para crear un objeto News a partir de un JSON
@@ -20,7 +22,7 @@ class News {
       title: json['title'],
       content: json['content'],
       publishedAt: DateTime.parse(json['publishedAt']),
-      imageUrl: json['imageUrl'],  // Extraer el campo imageUrl desde el JSON
+      imageUrl: json['imageUrl'],
     );
   }
 
@@ -31,7 +33,12 @@ class News {
       'title': title,
       'content': content,
       'publishedAt': publishedAt.toIso8601String(),
-      'imageUrl': imageUrl,  // Incluir imageUrl en la conversión a JSON
+      'imageUrl': imageUrl,
     };
+  }
+
+  // Propiedad para obtener la fecha formateada
+  String get formattedPublishedAt {
+    return DateFormat('d \'de\' MMMM \'de\' yyyy, h:mm a', 'es_ES').format(publishedAt);
   }
 }

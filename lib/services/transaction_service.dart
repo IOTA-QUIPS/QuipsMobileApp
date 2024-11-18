@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TransactionService {
-  final String transactionApiUrl = 'https://quips-backend-production.up.railway.app/api/transactions'; // Endpoint para realizar transacciones
+  final String transactionApiUrl = 'http://10.0.2.2:8080/api/transactions'; // Endpoint para realizar transacciones
 
   // Método para realizar una transacción
   Future<Map<String, dynamic>?> makeTransaction(String senderAccountNumber, String receiverAccountNumber, double amount) async {

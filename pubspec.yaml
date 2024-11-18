@@ -29,6 +29,7 @@ dependencies:
 
 
 
+
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.6
@@ -41,6 +42,8 @@ dev_dependencies:
   shared_preferences: ^2.0.9
   web_socket_channel: ^2.1.0
   stomp_dart_client: ^0.4.4
+  firebase_core: ^2.0.0
+  cloud_firestore: ^4.0.3
 
 flutter:
   uses-material-design: true
@@ -49,6 +52,7 @@ flutter:
     - assets/letras.png
     - assets/logo.jpg
     - assets/isotipo.png
+    - assets/default_avatar.png
 
   # Habilita la generación automática de localización
   generate: true

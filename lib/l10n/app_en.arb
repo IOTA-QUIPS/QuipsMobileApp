@@ -21,6 +21,7 @@
   "transactionSuccessful": "Transaction successful",
   "fullName": "Full Name",
   "username": "Username",
+  "emailOrUsername": "Email or Username",
   "email": "Email",
   "phoneNumber": "Phone Number",
   "accountNumber": "Account Number",

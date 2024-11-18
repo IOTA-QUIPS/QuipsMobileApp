@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:quipsapp/screens/contact_list_transaction_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quipsapp/services/auth_service.dart';
 import 'package:quipsapp/screens/transaction_page.dart';
+import 'package:quipsapp/screens/chat_list_page.dart';
 import 'package:quipsapp/services/news_service.dart';
 import 'package:quipsapp/model/news_model.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:quipsapp/services/inactivity_service.dart';
 import 'pin_login_page.dart';
+import 'news_detail_screen.dart'; // Importamos el nuevo screen
 
 class HomePage extends StatefulWidget {
   @override
@@ -16,6 +19,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String userName = "Loading...";
+  String? userId;
   double balance = 0.0;
   List<News> newsList = [];
   final AuthService _authService = AuthService();
@@ -55,6 +59,7 @@ class _HomePageState extends State<HomePage> {
       if (response != null && !response.containsKey('error')) {
         setState(() {
           userName = response['firstName'] + " " + response['lastName'];
+          userId = response['id'].toString();
           balance = response['coins'] != null ? response['coins'].toDouble() : 0.0;
         });
       } else {
@@ -174,7 +179,7 @@ class _HomePageState extends State<HomePage> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => TransactionPage()),
+              MaterialPageRoute(builder: (context) => ContactListTransactionPage()),
             ).then((value) {
               if (value == true) {
                 _loadUserData();
@@ -188,7 +193,16 @@ class _HomePageState extends State<HomePage> {
           icon: FontAwesomeIcons.solidComments,
           gradientColors: [Colors.blueAccent, Colors.lightBlue],
           onPressed: () {
-            Navigator.pushNamed(context, '/contacts');
+            if (userId != null) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ChatListPage(userId: userId!),
+                ),
+              );
+            } else {
+              print("Error: userId es nulo");
+            }
           },
         ),
       ],
@@ -307,10 +321,23 @@ class _HomePageState extends State<HomePage> {
                 )
                     : Icon(Icons.image_not_supported, color: Colors.grey, size: 60),
                 title: Text(news.title, style: TextStyle(color: Colors.white)),
-                subtitle: Text(news.content, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.grey[400])),
+                subtitle: Text(
+                  news.content,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: Colors.grey[400]),
+                ),
                 trailing: Icon(Icons.arrow_forward, color: Colors.amber[300]),
                 onTap: () {
-                  // Acción para ver detalles
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NewsDetailScreen(
+                        newsId: news.id, // Pasamos el ID de la noticia
+                        newsService: _newsService, // Pasamos el servicio de noticias
+                      ),
+                    ),
+                  );
                 },
               ),
             );

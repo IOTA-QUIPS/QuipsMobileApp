@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart'; // Importa Firebase
 import 'providers/locale_provider.dart';
 import 'screens/splash_screen.dart'; // Importa la pantalla SplashScreen
 import 'screens/chat_history_page.dart';
@@ -21,8 +22,21 @@ import 'admin/admin_home.dart';
 import 'admin/manage_news.dart';
 import 'admin/add_edit_news.dart';
 
+
+
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized(); // Necesario para inicializaciones asíncronas
+
+  // Inicializa Firebase y maneja errores
+  try {
+    await Firebase.initializeApp();
+    print("Firebase se inicializó correctamente.");
+  } catch (e) {
+    print("Error al inicializar Firebase: $e");
+  }
+
+
+
   runApp(const MyApp());
 }
 
@@ -54,7 +68,7 @@ class MyApp extends StatelessWidget {
               Locale('en', ''),
               Locale('es', ''),
             ],
-            initialRoute: '/',  // Cambiamos la ruta inicial a '/'
+            initialRoute: '/', // Cambiamos la ruta inicial a '/'
             routes: {
               '/': (context) => SplashScreen(), // Pantalla de verificación de sesión
               '/login': (context) => LoginPage(),

@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "690368667587",
-    "project_id": "quips-3e7b6",
-    "storage_bucket": "quips-3e7b6.appspot.com"
+    "project_number": "82262779023",
+    "project_id": "quip-7d857",
+    "storage_bucket": "quip-7d857.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:690368667587:android:86749aea4b1832ec862776",
+        "mobilesdk_app_id": "1:82262779023:android:6ea71955e9309512353cfa",
         "android_client_info": {
           "package_name": "com.example.quipsapp"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyA9UTc6rR_hZ1Mjj63Cni9BGswu_Js3nJY"
+          "current_key": "AIzaSyCSgepZw_B5mt5urYr8tiGNNyKSFE0g9us"
         }
       ],
       "services": {

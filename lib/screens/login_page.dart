@@ -6,15 +6,13 @@ import 'home_page.dart';
 import 'set_pin_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-
-
 class LoginPage extends StatefulWidget {
   @override
   _LoginPageState createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailOrUsernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final AuthService _authService = AuthService();
   bool _isLoading = false;
@@ -46,11 +44,11 @@ class _LoginPageState extends State<LoginPage> {
 
               // Título con sombra sutil
               Text(
-                localizations.welcomeBack,
+                "Quip!",
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w700,
                   color: Colors.amber[300],
                   shadows: [
                     Shadow(
@@ -63,11 +61,11 @@ class _LoginPageState extends State<LoginPage> {
               ),
               SizedBox(height: 24),
 
-              // Campo de texto para el email
+              // Campo de texto para el email o username
               _buildTextField(
-                controller: _usernameController,
-                hintText: localizations.email,
-                icon: Icons.email,
+                controller: _emailOrUsernameController,
+                hintText: localizations.emailOrUsername,
+                icon: Icons.person,
               ),
               SizedBox(height: 16),
 
@@ -178,7 +176,7 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     final response = await _authService.login(
-      _usernameController.text,
+      _emailOrUsernameController.text,
       _passwordController.text,
     );
 
@@ -231,7 +229,7 @@ class _LoginPageState extends State<LoginPage> {
         }
       } else {
         setState(() {
-         var localizations = AppLocalizations.of(context)!;
+          var localizations = AppLocalizations.of(context)!;
           _errorMessage = localizations.errorFetchingUserInfo;
         });
       }

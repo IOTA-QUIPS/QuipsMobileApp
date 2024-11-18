@@ -20,6 +20,7 @@
   "amount": "Cantidad",
   "transactionSuccessful": "Transacción exitosa",
   "fullName": "Nombre Completo",
+  "emailOrUsername": "Correo o Usuario",
   "username": "Usuario",
   "email": "Correo Electrónico",
   "phoneNumber": "Teléfono",

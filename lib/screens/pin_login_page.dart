@@ -8,15 +8,14 @@ class PinLoginPage extends StatefulWidget {
   _PinLoginPageState createState() => _PinLoginPageState();
 }
 
-class _PinLoginPageState extends State<PinLoginPage> {
+class _PinLoginPageState extends State<PinLoginPage> with TickerProviderStateMixin {
   final TextEditingController _pinController = TextEditingController();
-  String _errorMessage = '';
   List<int> _numbers = [];
   int _attempts = 0;
   bool _isBlocked = false;
   Timer? _timer;
   int _secondsRemaining = 0;
-  bool _showPad = false;
+  List<bool> _pinState = [false, false, false, false, false, false];
 
   @override
   void initState() {
@@ -33,136 +32,100 @@ class _PinLoginPageState extends State<PinLoginPage> {
   void _shuffleNumbers() {
     setState(() {
       _numbers = List<int>.generate(10, (i) => i);
-      _numbers.shuffle();
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: Text('Ingresar con Clave Secreta'),
-        backgroundColor: Colors.black,
-        elevation: 0,
-      ),
-      body: SingleChildScrollView( // Envuelve el contenido en un scroll
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: Colors.grey[900],
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black45,
-                      blurRadius: 10,
-                      offset: Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Icon(
-                    Icons.lock,
-                    color: Colors.amber[300],
-                    size: 40,
+      backgroundColor: Colors.white,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF9C27B0), Color(0xFF673AB7)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildTopContent(),
+              if (!_isBlocked) _buildPinIndicator(),
+              if (!_isBlocked) _buildNumericPad(screenSize),
+              if (_isBlocked) _buildBlockMessage(),
+              TextButton(
+                onPressed: () {
+                  // Acción para "¿Olvidaste tu clave?"
+                },
+                child: Text(
+                  '¿Olvidaste tu clave?',
+                  style: TextStyle(
+                    color: Colors.tealAccent,
+                    fontSize: 16,
+                    decoration: TextDecoration.underline,
                   ),
                 ),
               ),
-            ),
-            SizedBox(height: 30),
-            GestureDetector(
-              onTap: () {
-                setState(() {
-                  _showPad = !_showPad;
-                });
-              },
-              child: _buildPinField(),
-            ),
-            SizedBox(height: 20),
-            if (_showPad && !_isBlocked)
-              Column(
-                children: [
-                  _buildNumericPad(),
-                  SizedBox(height: 20),
-                  _buildDeleteButton(),
-                ],
-              ),
-            if (_isBlocked) _buildBlockMessage(),
-            if (_errorMessage.isNotEmpty) _buildErrorMessage(),
-            TextButton(
-              onPressed: () {
-                // Acción de "¿Olvidaste tu clave?"
-              },
-              child: Text(
-                '¿Olvidaste tu clave?',
-                style: TextStyle(color: Colors.amber[300], fontSize: 16),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPinField() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black45,
-            blurRadius: 10,
-            offset: Offset(0, 5),
+            ],
           ),
-        ],
-      ),
-      child: TextField(
-        controller: _pinController,
-        keyboardType: TextInputType.none,
-        obscureText: true,
-        readOnly: true,
-        style: TextStyle(color: Colors.white, fontSize: 18),
-        decoration: InputDecoration(
-          labelText: 'Ingrese su clave de 6 dígitos',
-          labelStyle: TextStyle(color: Colors.grey[600]),
-          border: InputBorder.none,
         ),
-        onTap: () {
-          setState(() {
-            _showPad = true;
-          });
-        },
       ),
     );
   }
 
-  Widget _buildBlockMessage() {
+  Widget _buildTopContent() {
     return Column(
       children: [
+        SizedBox(height: 20),
+        Image.asset(
+          'assets/isotipo.png',
+          height: 120,
+        ),
+        SizedBox(height: 20),
         Text(
-          'Demasiados intentos fallidos. Inténtalo de nuevo en $_secondsRemaining segundos.',
-          style: TextStyle(color: Colors.redAccent, fontSize: 16),
-          textAlign: TextAlign.center,
+          'Ingresa tu clave',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         SizedBox(height: 20),
       ],
     );
   }
 
-  Widget _buildNumericPad() {
+  Widget _buildPinIndicator() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(
+        6,
+            (index) => AnimatedContainer(
+          duration: Duration(milliseconds: 300),
+          margin: EdgeInsets.symmetric(horizontal: 8),
+          width: 16,
+          height: 16,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: _pinState[index] ? Colors.purple : Colors.grey[400],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNumericPad(Size screenSize) {
+    double buttonSize = screenSize.width / 4.5;
+
     return Container(
-      padding: const EdgeInsets.all(10.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
       child: GridView.builder(
         shrinkWrap: true,
-        physics: NeverScrollableScrollPhysics(), // Evitar scroll independiente
+        physics: NeverScrollableScrollPhysics(),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
           crossAxisSpacing: 10.0,
@@ -170,29 +133,37 @@ class _PinLoginPageState extends State<PinLoginPage> {
         ),
         itemCount: _numbers.length,
         itemBuilder: (context, index) {
-          return ElevatedButton(
-            onPressed: () {
+          return GestureDetector(
+            onTap: () {
               if (_pinController.text.length < 6) {
                 setState(() {
                   _pinController.text += _numbers[index].toString();
+                  _pinState[_pinController.text.length - 1] = true;
                 });
               }
               if (_pinController.text.length == 6) {
                 _validatePin();
               }
             },
-            child: Text(
-              _numbers[index].toString(),
-              style: TextStyle(fontSize: 24, color: Colors.black),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.amber[300],
-              shape: RoundedRectangleBorder(
+            child: Container(
+              width: buttonSize,
+              height: buttonSize,
+              decoration: BoxDecoration(
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                  ),
+                ],
               ),
-              padding: EdgeInsets.all(16),
-              shadowColor: Colors.amber.withOpacity(0.5),
-              elevation: 6,
+              child: Center(
+                child: Text(
+                  _numbers[index].toString(),
+                  style: TextStyle(fontSize: 24, color: Colors.black),
+                ),
+              ),
             ),
           );
         },
@@ -200,26 +171,11 @@ class _PinLoginPageState extends State<PinLoginPage> {
     );
   }
 
-  Widget _buildDeleteButton() {
-    return IconButton(
-      icon: Icon(Icons.backspace, color: Colors.redAccent),
-      onPressed: () {
-        if (_pinController.text.isNotEmpty) {
-          setState(() {
-            _pinController.text =
-                _pinController.text.substring(0, _pinController.text.length - 1);
-          });
-        }
-      },
-      iconSize: 30,
-    );
-  }
-
-  Widget _buildErrorMessage() {
+  Widget _buildBlockMessage() {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(16.0),
       child: Text(
-        _errorMessage,
+        'Demasiados intentos fallidos. Inténtalo de nuevo en $_secondsRemaining segundos.',
         style: TextStyle(color: Colors.redAccent, fontSize: 16),
         textAlign: TextAlign.center,
       ),
@@ -227,13 +183,17 @@ class _PinLoginPageState extends State<PinLoginPage> {
   }
 
   void _validatePin() async {
+    _showLoadingDialog(); // Muestra el diálogo de carga
+
+    await Future.delayed(Duration(seconds: 2)); // Simula el tiempo de procesamiento
+
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? savedPin = prefs.getString('sixDigitPin');
 
-      if (savedPin == null) throw Exception('No se encontró una clave guardada.');
+      Navigator.pop(context); // Cierra el diálogo de carga
 
-      savedPin = savedPin.replaceAll('"', '');
+      if (savedPin == null) throw Exception('No se encontró una clave guardada.');
 
       if (_pinController.text == savedPin) {
         Navigator.pushReplacement(
@@ -244,18 +204,67 @@ class _PinLoginPageState extends State<PinLoginPage> {
         );
       } else {
         setState(() {
-          _errorMessage = 'Clave incorrecta';
           _pinController.clear();
+          _pinState = [false, false, false, false, false, false];
           _attempts++;
         });
 
         if (_attempts >= 3) _startBlockTimer();
+
+        _showErrorDialog();
       }
     } catch (e) {
-      setState(() {
-        _errorMessage = 'Ocurrió un error. Inténtalo nuevamente.';
-      });
+      Navigator.pop(context); // Cierra el diálogo de carga si ocurre un error
+      _showErrorDialog(message: 'Ocurrió un error. Inténtalo nuevamente.');
     }
+  }
+
+  void _showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // No permite cerrar el diálogo tocando fuera
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(color: Colors.purple),
+                SizedBox(height: 20),
+                Text(
+                  'Validando datos',
+                  style: TextStyle(color: Colors.black, fontSize: 16),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showErrorDialog({String message = 'Clave incorrecta'}) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          title: Text('Error', style: TextStyle(color: Colors.red)),
+          content: Text(message, style: TextStyle(fontSize: 16)),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('Intentar de nuevo', style: TextStyle(color: Colors.purple)),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _startBlockTimer() {
