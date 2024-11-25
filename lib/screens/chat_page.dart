@@ -36,6 +36,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   void dispose() {
     _messageFetchTimer?.cancel();
+    _controller.dispose();
     super.dispose();
   }
 
@@ -46,9 +47,11 @@ class _ChatPageState extends State<ChatPage> {
     );
 
     if (response != null && !response.containsKey('error')) {
-      setState(() {
-        conversationId = response['id'].toString();
-      });
+      if (mounted) {
+        setState(() {
+          conversationId = response['id'].toString();
+        });
+      }
       _loadMessages();
       _startAutoRefresh();
     } else {
@@ -60,14 +63,16 @@ class _ChatPageState extends State<ChatPage> {
     if (conversationId != null) {
       final messagesResponse = await chatApiService.getConversationMessages(conversationId!);
       if (messagesResponse != null) {
-        setState(() {
-          _messages = messagesResponse.map<String>((msg) {
-            String sender = msg['sender']['id'].toString() == widget.senderId
-                ? '${widget.senderUsername} (You)'
-                : widget.receiverUsername;
-            return "$sender: ${msg['content']}";
-          }).toList();
-        });
+        if (mounted) {
+          setState(() {
+            _messages = messagesResponse.map<String>((msg) {
+              String sender = msg['sender']['id'].toString() == widget.senderId
+                  ? '${widget.senderUsername} (You)'
+                  : widget.receiverUsername;
+              return "$sender: ${msg['content']}";
+            }).toList();
+          });
+        }
       } else {
         print('Error al cargar los mensajes');
       }
@@ -76,7 +81,11 @@ class _ChatPageState extends State<ChatPage> {
 
   void _startAutoRefresh() {
     _messageFetchTimer = Timer.periodic(Duration(seconds: 2), (timer) {
-      _loadMessages();
+      if (mounted) {
+        _loadMessages();
+      } else {
+        _messageFetchTimer?.cancel();
+      }
     });
   }
 

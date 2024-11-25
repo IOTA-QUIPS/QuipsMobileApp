@@ -46,5 +46,10 @@
   "register": "Register",
   "alreadyHaveAccountLogin": "Already have an account? Login",
   "contactList": "Contact List",
-  "you": "You"
+  "you": "You",
+  "fieldRequired": "This field is required.",
+  "usernameTooShort": "Username must be at least 3 characters long.",
+  "invalidEmail": "Enter a valid email address.",
+  "passwordTooShort": "Password must be at least 6 characters long.",
+  "invalidPhoneNumber": "Enter a valid phone number with 9 digits."
 }

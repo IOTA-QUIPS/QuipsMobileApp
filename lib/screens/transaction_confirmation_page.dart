@@ -12,11 +12,16 @@ class TransactionConfirmationPage extends StatelessWidget {
     required this.amount,
     required this.timestamp,
     required this.operationHash,
-  });
+  }) {
+    // Imprimir la hora en la consola al crear esta pantalla
+    final localTime = DateTime.now().toLocal();
+    print("Transacción realizada el: $localTime");
+  }
 
   String _formatTimestamp(String timestamp) {
-    DateTime parsedDate = DateTime.parse(timestamp);
-    return "${parsedDate.day.toString().padLeft(2, '0')} ${_monthName(parsedDate.month)} ${parsedDate.year}, ${parsedDate.hour}:${parsedDate.minute.toString().padLeft(2, '0')} pm";
+    // Convertir la marca de tiempo a local
+    DateTime parsedDate = DateTime.parse(timestamp).toLocal();
+    return "${parsedDate.day.toString().padLeft(2, '0')} ${_monthName(parsedDate.month)} ${parsedDate.year}, ${parsedDate.hour}:${parsedDate.minute.toString().padLeft(2, '0')} ${parsedDate.hour >= 12 ? 'pm' : 'am'}";
   }
 
   String _monthName(int month) {

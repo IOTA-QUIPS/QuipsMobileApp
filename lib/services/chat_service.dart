@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 class ChatApiService {
   final String baseUrl;
 
-  ChatApiService({this.baseUrl = 'http://10.0.2.2:8080/api/chat'});
+  ChatApiService({this.baseUrl = 'https://quips-backend-production.up.railway.app/api/chat'});
 
   // Crear o obtener conversación uno-a-uno
   Future<Map<String, dynamic>?> createOrGetConversation(String user1Id, String user2Id) async {
@@ -43,7 +43,7 @@ class ChatApiService {
     print("Verificando contactos registrados: $phoneNumbers");
     try {
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8080/api/contacts/check'),
+        Uri.parse('https://quips-backend-production.up.railway.app/api/contacts/check'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },

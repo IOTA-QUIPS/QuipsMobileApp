@@ -46,5 +46,10 @@
   "register": "Registrarse",
   "alreadyHaveAccountLogin": "¿Ya tienes una cuenta? Inicia sesión",
   "contactList": "Lista de Contactos",
-  "you": "Tú"
+  "you": "Tú",
+  "fieldRequired": "Este campo es obligatorio.",
+  "usernameTooShort": "El nombre de usuario debe tener al menos 3 caracteres.",
+  "invalidEmail": "Introduce una dirección de correo válida.",
+  "passwordTooShort": "La contraseña debe tener al menos 6 caracteres.",
+  "invalidPhoneNumber": "Introduce un número de teléfono válido de 9 dígitos."
 }

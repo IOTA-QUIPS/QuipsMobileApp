@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:contacts_service/contacts_service.dart';
-import '../services/auth_service.dart';
+import '../services/chat_service.dart'; // Importa ChatApiService
 import 'transaction_amount_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,6 +19,7 @@ class _ContactListTransactionPageState
   Map<String, String> deviceContactNames = {}; // Nombres agendados en el dispositivo
   bool isLoading = true;
   String? currentUserPhoneNumber; // Número de teléfono del usuario actual
+  final ChatApiService chatApiService = ChatApiService(); // Instancia de ChatApiService
 
   @override
   void initState() {
@@ -41,16 +42,23 @@ class _ContactListTransactionPageState
         List<String> phoneNumbers = deviceContactNames.keys.toList();
 
         // Verificar contactos registrados en la app
-        AuthService authService = AuthService();
         List<dynamic>? registeredContacts =
-        await authService.getRegisteredContacts(phoneNumbers);
+        await chatApiService.getRegisteredContacts(phoneNumbers);
 
         // Actualizar la lista de contactos si se encuentran registros
         if (registeredContacts != null) {
           setState(() {
             appContacts = registeredContacts.map((contact) {
               String phone = contact['phoneNumber'];
-              String displayName = deviceContactNames[phone] ?? phone;
+
+              // Normalizar número antes de buscarlo en los nombres agendados
+              String normalizedPhone = phone.replaceAll(RegExp(r'[()\s-]'), '');
+              if (normalizedPhone.length == 9 && !normalizedPhone.startsWith('+51')) {
+                normalizedPhone = '+51$normalizedPhone';
+              }
+
+              String displayName = deviceContactNames[normalizedPhone] ?? phone;
+
               return {
                 "name": displayName, // Nombre agendado
                 "phone": phone, // Teléfono
@@ -98,7 +106,12 @@ class _ContactListTransactionPageState
     for (var contact in contacts) {
       for (var phone in contact.phones!) {
         // Normalizar los números eliminando espacios y caracteres no numéricos
-        String normalizedPhone = phone.value!.replaceAll(RegExp(r'\s+'), '');
+        String normalizedPhone = phone.value!.replaceAll(RegExp(r'[()\s-]'), '');
+
+        // Si es un número de 9 dígitos, agregar el prefijo +51
+        if (normalizedPhone.length == 9 && !normalizedPhone.startsWith('+51')) {
+          normalizedPhone = '+51$normalizedPhone';
+        }
 
         // Construir nombre completo (nombre + apellido)
         String displayName = (contact.givenName ?? '') +

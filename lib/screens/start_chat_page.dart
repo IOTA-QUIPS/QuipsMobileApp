@@ -5,8 +5,7 @@ import '../services/chat_service.dart';
 import '../services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-
-import 'chat_page.dart'; // Asegúrate de importar ChatPage aquí
+import 'chat_page.dart';
 
 class StartChatPage extends StatefulWidget {
   @override
@@ -19,12 +18,19 @@ class _StartChatPageState extends State<StartChatPage> {
   Future<List<dynamic>?>? _contactsFuture;
   String? currentUserId;
   Map<String, String> phoneContactNames = {};
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _loadCurrentUser();
-    _loadPhoneContacts(); // Cargar contactos al iniciar la pantalla
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    setState(() => _isLoading = true);
+    await _loadCurrentUser();
+    await _loadPhoneContacts();
+    setState(() => _isLoading = false);
   }
 
   Future<void> _loadCurrentUser() async {
@@ -32,9 +38,9 @@ class _StartChatPageState extends State<StartChatPage> {
     String? token = prefs.getString('jwtToken');
     if (token != null) {
       final response = await AuthService().getUserInfo(token);
-      setState(() {
+      if (mounted) {
         currentUserId = response?['id'].toString();
-      });
+      }
     }
   }
 
@@ -53,36 +59,40 @@ class _StartChatPageState extends State<StartChatPage> {
   }
 
   Future<void> _loadPhoneContacts() async {
+    // Obtener contactos almacenados en caché
     List<dynamic> cachedContacts = await _getCachedContacts();
-    if (cachedContacts.isNotEmpty) {
-      setState(() {
-        _contactsFuture = Future.value(cachedContacts);
-      });
-    }
 
+    // Solicitar permiso de contactos
     await requestContactsPermission();
+
+    // Obtener contactos del dispositivo
     List<String> phoneContacts = await getPhoneContacts();
-    final registeredContacts = await chatApiService.getRegisteredContacts(phoneContacts);
 
-    if (registeredContacts != null) {
-      await _cacheContacts(registeredContacts);
-    }
-
-    for (var contact in await ContactsService.getContacts()) {
-      for (var phone in contact.phones!) {
-        String normalizedPhone = phone.value!.replaceAll(RegExp(r'\s+'), '');
-        phoneContactNames[normalizedPhone] = contact.displayName ?? '';
+    // Normalizar números locales
+    List<String> normalizedPhoneContacts = phoneContacts.map((number) {
+      String cleanedNumber = number.replaceAll(RegExp(r'[()\s-]'), '');
+      if (cleanedNumber.length == 9 && !cleanedNumber.startsWith('+51')) {
+        cleanedNumber = '+51$cleanedNumber';
       }
-    }
+      return cleanedNumber;
+    }).toList();
 
-    if (registeredContacts != null) {
-      setState(() {
-        _contactsFuture = Future.value(registeredContacts);
-      });
+    // Llamar a la API con números normalizados
+    final registeredContacts = await chatApiService.getRegisteredContacts(normalizedPhoneContacts);
+
+    if (registeredContacts != null && registeredContacts.isNotEmpty) {
+      for (var contact in registeredContacts) {
+        String normalizedPhoneNumber = contact['phoneNumber'].replaceAll(RegExp(r'[()\s-]'), '');
+        if (normalizedPhoneNumber.length == 9 && !normalizedPhoneNumber.startsWith('+51')) {
+          normalizedPhoneNumber = '+51$normalizedPhoneNumber';
+        }
+        contact['displayName'] = phoneContactNames[normalizedPhoneNumber] ?? contact['phoneNumber'];
+      }
+
+      await _cacheContacts(registeredContacts);
+      _contactsFuture = Future.value(registeredContacts);
     } else {
-      setState(() {
-        _contactsFuture = Future.value(cachedContacts);
-      });
+      _contactsFuture = Future.value(cachedContacts);
     }
   }
 
@@ -96,14 +106,30 @@ class _StartChatPageState extends State<StartChatPage> {
   Future<List<String>> getPhoneContacts() async {
     List<String> phoneNumbers = [];
     Iterable<Contact> contacts = await ContactsService.getContacts();
+
     for (var contact in contacts) {
       for (var phone in contact.phones!) {
-        String normalizedPhone = phone.value!.replaceAll(RegExp(r'\s+'), '');
+        String normalizedPhone = phone.value!.replaceAll(RegExp(r'[()\s-]'), '');
+
+        if (normalizedPhone.length == 9 && !normalizedPhone.startsWith('+51')) {
+          normalizedPhone = '+51$normalizedPhone';
+        }
+
         phoneNumbers.add(normalizedPhone);
+
+        // Agregar al mapa con el nombre agendado
         phoneContactNames[normalizedPhone] = contact.displayName ?? '';
       }
     }
+
+    print("Contactos almacenados en phoneContactNames: $phoneContactNames");
     return phoneNumbers;
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -121,7 +147,9 @@ class _StartChatPageState extends State<StartChatPage> {
           ),
         ],
       ),
-      body: Column(
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator(color: Colors.teal))
+          : Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -177,8 +205,8 @@ class _StartChatPageState extends State<StartChatPage> {
                     itemCount: contacts.length,
                     itemBuilder: (context, index) {
                       final contact = contacts[index];
+                      final contactName = contact['displayName'] ?? contact['phoneNumber'];
                       final phoneNumber = contact['phoneNumber'];
-                      final contactName = phoneContactNames[phoneNumber] ?? phoneNumber;
 
                       if (contact['id'].toString() == currentUserId) {
                         return SizedBox.shrink();
@@ -188,18 +216,17 @@ class _StartChatPageState extends State<StartChatPage> {
                         leading: CircleAvatar(
                           backgroundImage: AssetImage('assets/default_avatar.png'),
                         ),
-                        title: Text(contactName),
-                        subtitle: Text(phoneNumber),
+                        title: Text(contactName), // Mostrar el nombre agendado
+                        subtitle: Text(phoneNumber), // Mostrar el número
                         onTap: () {
-                          // Navegar a ChatPage con la información adecuada
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => ChatPage(
-                                senderId: currentUserId!, // ID del usuario actual
-                                receiverId: contact['id'].toString(), // ID del contacto seleccionado
-                                senderUsername: 'You', // Nombre del usuario actual
-                                receiverUsername: contactName, // Nombre del contacto seleccionado
+                                senderId: currentUserId!,
+                                receiverId: contact['id'].toString(),
+                                senderUsername: 'You',
+                                receiverUsername: contactName,
                               ),
                             ),
                           );

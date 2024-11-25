@@ -101,7 +101,7 @@ class TransactionAmountPage extends StatelessWidget {
             SizedBox(height: 12),
             // Límite de transferencia
             Text(
-              "Límite por yapear S/ 500, límite total por día S/ 2,000",
+              "Límite por quipear Q! 500, límite total por día Q! 2,000",
               style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),

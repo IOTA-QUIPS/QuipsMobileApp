@@ -3,9 +3,9 @@ import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
 
 class AuthService {
-  final String loginApiUrl = 'http://10.0.2.2:8080/api/users/login'; // Ajusta la IP si es necesario
-  final String registerApiUrl = 'http://10.0.2.2:8080/api/users'; // Endpoint para el registro
-  final String userInfoApiUrl = 'http://10.0.2.2:8080/api/users/me'; // Endpoint para obtener información del usuario
+  final String loginApiUrl = 'https://quips-backend-production.up.railway.app/api/users/login'; // Ajusta la IP si es necesario
+  final String registerApiUrl = 'https://quips-backend-production.up.railway.app/api/users'; // Endpoint para el registro
+  final String userInfoApiUrl = 'https://quips-backend-production.up.railway.app/api/users/me'; // Endpoint para obtener información del usuario
 
   // Método para hacer login
   Future<Map<String, dynamic>?> login(String username, String password) async {
@@ -70,7 +70,7 @@ class AuthService {
   // Método para guardar la clave secreta
   Future<String?> setPin(String token, String pin) async {
     final response = await http.post(
-      Uri.parse('http://10.0.2.2:8080/api/users/setPin'),
+      Uri.parse('https://quips-backend-production.up.railway.app/api/users/setPin'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $token',
@@ -115,13 +115,13 @@ class AuthService {
     print("Verificando contactos registrados: $phoneNumbers");
     try {
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8080/api/contacts/check'),
+        Uri.parse('https://quips-backend-production.up.railway.app/check'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode(phoneNumbers),
       );
-
+      print("Cuerpo de la solicitud: ${jsonEncode(phoneNumbers)}");
       print("Respuesta de verificación de contactos: ${response.statusCode}, Body: ${response.body}");
       if (response.statusCode == 200) {
         return jsonDecode(response.body);

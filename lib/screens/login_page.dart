@@ -195,18 +195,10 @@ class _LoginPageState extends State<LoginPage> {
 
       final userInfo = await _authService.getUserInfo(token);
 
-      if (userInfo != null && userInfo.containsKey('sixDigitPin')) {
-        final String? sixDigitPin = userInfo['sixDigitPin'];
-        if (sixDigitPin != null && sixDigitPin.isNotEmpty) {
-          await prefs.setString('sixDigitPin', sixDigitPin);
-        } else {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => SetPinPage(token),
-            ),
-          );
-          return;
+      if (userInfo != null) {
+        if (userInfo.containsKey('phoneNumber')) {
+          await prefs.setString('phoneNumber', userInfo['phoneNumber']); // Guardar número de teléfono
+          print("[LOG] Número de teléfono guardado: ${userInfo['phoneNumber']}");
         }
       }
 
