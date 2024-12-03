@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quipsapp/services/auth_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'set_pin_page.dart';
 
 class RegisterPage extends StatefulWidget {
   @override
@@ -11,8 +12,6 @@ class _RegisterPageState extends State<RegisterPage> {
   final AuthService _authService = AuthService();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -49,68 +48,32 @@ class _RegisterPageState extends State<RegisterPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 32.0),
-                  child: Text(
-                    localizations.createAccount,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.amber[300],
-                      shadows: [
-                        Shadow(
-                          offset: Offset(0, 4),
-                          blurRadius: 10,
-                          color: Colors.black45,
-                        ),
-                      ],
-                    ),
+                Text(
+                  localizations.createAccount,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.amber[300],
                   ),
                 ),
-
+                SizedBox(height: 32),
                 _buildTextField(
                   controller: _firstNameController,
                   hintText: localizations.firstName,
                   icon: Icons.person,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return localizations.fieldRequired;
-                    }
-                    return null;
-                  },
+                  validator: (value) =>
+                  value == null || value.isEmpty ? localizations.fieldRequired : null,
                 ),
                 SizedBox(height: 24),
-
                 _buildTextField(
                   controller: _lastNameController,
                   hintText: localizations.lastName,
                   icon: Icons.person_outline,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return localizations.fieldRequired;
-                    }
-                    return null;
-                  },
+                  validator: (value) =>
+                  value == null || value.isEmpty ? localizations.fieldRequired : null,
                 ),
                 SizedBox(height: 24),
-
-                _buildTextField(
-                  controller: _usernameController,
-                  hintText: localizations.username,
-                  icon: Icons.person,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return localizations.fieldRequired;
-                    }
-                    if (value.length < 3) {
-                      return localizations.usernameTooShort;
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 24),
-
                 _buildTextField(
                   controller: _emailController,
                   hintText: localizations.email,
@@ -128,27 +91,8 @@ class _RegisterPageState extends State<RegisterPage> {
                   },
                 ),
                 SizedBox(height: 24),
-
-                _buildTextField(
-                  controller: _passwordController,
-                  hintText: localizations.password,
-                  icon: Icons.lock,
-                  obscureText: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return localizations.fieldRequired;
-                    }
-                    if (value.length < 6) {
-                      return localizations.passwordTooShort;
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 24),
-
                 _buildCountrySelector(localizations),
                 SizedBox(height: 24),
-
                 _buildTextField(
                   controller: _phoneNumberController,
                   hintText: localizations.phoneNumber,
@@ -165,17 +109,14 @@ class _RegisterPageState extends State<RegisterPage> {
                   },
                 ),
                 SizedBox(height: 24),
-
                 _buildTextField(
                   controller: _referralCodeController,
                   hintText: localizations.referralCodeOptional,
                   icon: Icons.card_giftcard,
                 ),
                 SizedBox(height: 32),
-
                 _buildTermsCheckbox(localizations),
                 SizedBox(height: 32),
-
                 _isLoading
                     ? Center(child: CircularProgressIndicator(color: Colors.amber[300]))
                     : ElevatedButton(
@@ -185,16 +126,13 @@ class _RegisterPageState extends State<RegisterPage> {
                     backgroundColor: Colors.amber[300],
                     foregroundColor: Colors.black,
                     padding: EdgeInsets.symmetric(vertical: 16.0),
-                    textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    textStyle:
+                    TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0),
                     ),
-                    shadowColor: Colors.amber[100],
-                    elevation: 6,
                   ),
                 ),
-                SizedBox(height: 32),
-
                 if (_errorMessage.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -204,22 +142,6 @@ class _RegisterPageState extends State<RegisterPage> {
                       textAlign: TextAlign.center,
                     ),
                   ),
-                SizedBox(height: 32),
-
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pushNamed(context, '/login');
-                  },
-                  child: Text(
-                    localizations.alreadyHaveAccountLogin,
-                    style: TextStyle(
-                      color: Colors.amber[300],
-                      fontSize: 16,
-                      decoration: TextDecoration.underline,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
               ],
             ),
           ),
@@ -228,83 +150,48 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Widget _buildCountrySelector(AppLocalizations localizations) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24.0),
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 8.0),
-        decoration: BoxDecoration(
-          color: Colors.grey[900],
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black45,
-              blurRadius: 10,
-              offset: Offset(0, 5),
-            ),
-          ],
-        ),
-        child: DropdownButtonFormField<String>(
-          value: _selectedCountryCode,
-          dropdownColor: Colors.grey[900],
-          iconEnabledColor: Colors.amber[300],
-          style: TextStyle(color: Colors.white),
-          items: _countryCodes.map((country) {
-            return DropdownMenuItem<String>(
-              value: country['code'],
-              child: Text(
-                '${country['name']} (${country['code']})',
-                style: TextStyle(color: Colors.white),
-              ),
-            );
-          }).toList(),
-          decoration: InputDecoration(
-            labelText: localizations.selectCountry,
-            labelStyle: TextStyle(color: Colors.grey[600]),
-            border: InputBorder.none,
-          ),
-          onChanged: (value) {
-            setState(() {
-              _selectedCountryCode = value!;
-            });
-          },
-        ),
-      ),
-    );
-  }
+  Future<void> _register() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
-  Widget _buildTermsCheckbox(AppLocalizations localizations) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Transform.scale(
-          scale: 1.2,
-          child: Checkbox(
-            value: _acceptTerms,
-            onChanged: (value) {
-              setState(() {
-                _acceptTerms = value!;
-              });
-            },
-            activeColor: Colors.amber[300],
-          ),
-        ),
-        Expanded(
-          child: GestureDetector(
-            onTap: () {
-              Navigator.pushNamed(context, '/terms');
-            },
-            child: Text(
-              localizations.acceptTermsAndConditions,
-              style: TextStyle(
-                color: Colors.amber[300],
-                decoration: TextDecoration.underline,
-              ),
-            ),
-          ),
-        ),
-      ],
+    if (!_acceptTerms) {
+      setState(() {
+        _errorMessage = AppLocalizations.of(context)!.mustAcceptTerms;
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    String phoneNumber = _selectedCountryCode + _phoneNumberController.text;
+
+    final result = await _authService.register(
+      _firstNameController.text,
+      _lastNameController.text,
+      _emailController.text,
+      phoneNumber,
+      _referralCodeController.text,
     );
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (result != null && result.containsKey('token')) {
+      String token = result['token'];
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => SetPinPage(token)),
+      );
+    } else {
+      setState(() {
+        _errorMessage = result?['error'] ?? 'Error al registrarse';
+      });
+    }
   }
 
   Widget _buildTextField({
@@ -349,44 +236,68 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Future<void> _register() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    if (!_acceptTerms) {
-      setState(() {
-        _errorMessage = AppLocalizations.of(context)!.mustAcceptTerms;
-      });
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = '';
-    });
-
-    String phoneNumber = _selectedCountryCode + _phoneNumberController.text;
-    String? errorMessage = await _authService.register(
-      _usernameController.text,
-      _passwordController.text,
-      _firstNameController.text,
-      _lastNameController.text,
-      _emailController.text,
-      phoneNumber,
-      _referralCodeController.text,
+  Widget _buildCountrySelector(AppLocalizations localizations) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24.0),
+      child: DropdownButtonFormField<String>(
+        value: _selectedCountryCode,
+        dropdownColor: Colors.grey[900],
+        iconEnabledColor: Colors.amber[300],
+        style: TextStyle(color: Colors.white),
+        items: _countryCodes.map((country) {
+          return DropdownMenuItem<String>(
+            value: country['code'],
+            child: Text(
+              '${country['name']} (${country['code']})',
+              style: TextStyle(color: Colors.white),
+            ),
+          );
+        }).toList(),
+        decoration: InputDecoration(
+          labelText: localizations.selectCountry,
+          labelStyle: TextStyle(color: Colors.grey[600]),
+          border: InputBorder.none,
+        ),
+        onChanged: (value) {
+          setState(() {
+            _selectedCountryCode = value!;
+          });
+        },
+      ),
     );
+  }
 
-    setState(() {
-      _isLoading = false;
-    });
-
-    if (errorMessage == null) {
-      Navigator.pushReplacementNamed(context, '/login');
-    } else {
-      setState(() {
-        _errorMessage = errorMessage;
-      });
-    }
+  Widget _buildTermsCheckbox(AppLocalizations localizations) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Transform.scale(
+          scale: 1.2,
+          child: Checkbox(
+            value: _acceptTerms,
+            onChanged: (value) {
+              setState(() {
+                _acceptTerms = value!;
+              });
+            },
+            activeColor: Colors.amber[300],
+          ),
+        ),
+        Expanded(
+          child: GestureDetector(
+            onTap: () {
+              Navigator.pushNamed(context, '/terms');
+            },
+            child: Text(
+              localizations.acceptTermsAndConditions,
+              style: TextStyle(
+                color: Colors.amber[300],
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

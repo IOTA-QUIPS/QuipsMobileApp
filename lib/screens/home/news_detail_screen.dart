@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../model/news_model.dart';
-import '../services/news_service.dart';
+import '../../model/news_model.dart';
+import '../../services/news_service.dart';
 
 class NewsDetailScreen extends StatelessWidget {
   final int newsId;

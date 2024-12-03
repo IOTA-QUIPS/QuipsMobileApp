@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'home_page.dart';
+import '../home/home_page.dart';
 
 class PinLoginPage extends StatefulWidget {
   @override
@@ -131,41 +131,74 @@ class _PinLoginPageState extends State<PinLoginPage> with TickerProviderStateMix
           crossAxisSpacing: 10.0,
           mainAxisSpacing: 10.0,
         ),
-        itemCount: _numbers.length,
+        itemCount: _numbers.length + 1, // Incluye el botón de borrar
         itemBuilder: (context, index) {
-          return GestureDetector(
-            onTap: () {
-              if (_pinController.text.length < 6) {
-                setState(() {
-                  _pinController.text += _numbers[index].toString();
-                  _pinState[_pinController.text.length - 1] = true;
-                });
-              }
-              if (_pinController.text.length == 6) {
-                _validatePin();
-              }
-            },
-            child: Container(
-              width: buttonSize,
-              height: buttonSize,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 8,
-                  ),
-                ],
-              ),
-              child: Center(
-                child: Text(
-                  _numbers[index].toString(),
-                  style: TextStyle(fontSize: 24, color: Colors.black),
+          if (index == _numbers.length) {
+            // Botón de borrar
+            return GestureDetector(
+              onTap: () {
+                if (_pinController.text.isNotEmpty) {
+                  setState(() {
+                    _pinState[_pinController.text.length - 1] = false;
+                    _pinController.text =
+                        _pinController.text.substring(0, _pinController.text.length - 1);
+                  });
+                }
+              },
+              child: Container(
+                width: buttonSize,
+                height: buttonSize,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Icon(Icons.backspace, size: 24, color: Colors.black),
                 ),
               ),
-            ),
-          );
+            );
+          } else {
+            // Botones numéricos
+            return GestureDetector(
+              onTap: () {
+                if (_pinController.text.length < 6) {
+                  setState(() {
+                    _pinController.text += _numbers[index].toString();
+                    _pinState[_pinController.text.length - 1] = true;
+                  });
+                }
+                if (_pinController.text.length == 6) {
+                  _validatePin();
+                }
+              },
+              child: Container(
+                width: buttonSize,
+                height: buttonSize,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(
+                    _numbers[index].toString(),
+                    style: TextStyle(fontSize: 24, color: Colors.black),
+                  ),
+                ),
+              ),
+            );
+          }
         },
       ),
     );
@@ -183,15 +216,15 @@ class _PinLoginPageState extends State<PinLoginPage> with TickerProviderStateMix
   }
 
   void _validatePin() async {
-    _showLoadingDialog(); // Muestra el diálogo de carga
+    _showLoadingDialog();
 
-    await Future.delayed(Duration(seconds: 2)); // Simula el tiempo de procesamiento
+    await Future.delayed(Duration(seconds: 2));
 
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? savedPin = prefs.getString('sixDigitPin');
 
-      Navigator.pop(context); // Cierra el diálogo de carga
+      Navigator.pop(context);
 
       if (savedPin == null) throw Exception('No se encontró una clave guardada.');
 
@@ -214,7 +247,7 @@ class _PinLoginPageState extends State<PinLoginPage> with TickerProviderStateMix
         _showErrorDialog();
       }
     } catch (e) {
-      Navigator.pop(context); // Cierra el diálogo de carga si ocurre un error
+      Navigator.pop(context);
       _showErrorDialog(message: 'Ocurrió un error. Inténtalo nuevamente.');
     }
   }
@@ -222,7 +255,7 @@ class _PinLoginPageState extends State<PinLoginPage> with TickerProviderStateMix
   void _showLoadingDialog() {
     showDialog(
       context: context,
-      barrierDismissible: false, // No permite cerrar el diálogo tocando fuera
+      barrierDismissible: false,
       builder: (context) {
         return Dialog(
           backgroundColor: Colors.white,

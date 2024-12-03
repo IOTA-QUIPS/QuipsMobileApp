@@ -38,6 +38,7 @@
   "dontHaveAccountSignUp": "¿No tienes una cuenta? Regístrate",
   "errorFetchingUserInfo": "Error al obtener la información del usuario",
   "createAccount": "Crear Cuenta",
+  "activityLevel": "Nivel de Actividad",
   "firstName": "Nombre",
   "lastName": "Apellido",
   "referralCodeOptional": "Código de Referido (Opcional)",
@@ -51,5 +52,10 @@
   "usernameTooShort": "El nombre de usuario debe tener al menos 3 caracteres.",
   "invalidEmail": "Introduce una dirección de correo válida.",
   "passwordTooShort": "La contraseña debe tener al menos 6 caracteres.",
-  "invalidPhoneNumber": "Introduce un número de teléfono válido de 9 dígitos."
+  "invalidPhoneNumber": "Introduce un número de teléfono válido de 9 dígitos.",
+  "accountNotActivated": "Cuenta No Activada",
+  "activateAccountPrompt": "Por favor, activa tu cuenta para usar esta función.",
+  "ok": "OK",
+  "normal": "Normal",
+  "notActive": "No Activo"
 }

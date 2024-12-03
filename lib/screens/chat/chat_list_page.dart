@@ -2,9 +2,9 @@ import 'package:contacts_service/contacts_service.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
-import 'package:quipsapp/screens/start_chat_page.dart';
-import '../services/chat_service.dart';
-import '../services/contact_service.dart';
+import 'package:quipsapp/screens/chat/start_chat_page.dart';
+import '../../services/chat_service.dart';
+import '../../services/contact_service.dart';
 import 'chat_page.dart';
 import 'dart:convert';
 

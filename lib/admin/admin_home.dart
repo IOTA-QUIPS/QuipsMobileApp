@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quipsapp/services/auth_service.dart';
-import 'package:quipsapp/screens/transaction_page.dart';
+import 'package:quipsapp/screens/transactions/transaction_page.dart';
 import 'package:quipsapp/services/news_service.dart';
 import 'package:quipsapp/model/news_model.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';

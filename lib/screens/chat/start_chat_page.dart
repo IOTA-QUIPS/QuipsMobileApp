@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:contacts_service/contacts_service.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../services/chat_service.dart';
-import '../services/auth_service.dart';
+import '../../services/chat_service.dart';
+import '../../services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'chat_page.dart';

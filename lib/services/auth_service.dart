@@ -1,89 +1,124 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:permission_handler/permission_handler.dart';
 
 class AuthService {
-  final String loginApiUrl = 'https://quips-backend-production.up.railway.app/api/users/login'; // Ajusta la IP si es necesario
-  final String registerApiUrl = 'https://quips-backend-production.up.railway.app/api/users'; // Endpoint para el registro
-  final String userInfoApiUrl = 'https://quips-backend-production.up.railway.app/api/users/me'; // Endpoint para obtener información del usuario
+  final String baseUrl = 'https://quips-backend-production.up.railway.app/api/users';
 
-  // Método para hacer login
-  Future<Map<String, dynamic>?> login(String username, String password) async {
+  // Método para hacer login usando PIN
+  Future<Map<String, dynamic>?> login(String username, String pin) async {
     try {
       final response = await http.post(
-        Uri.parse(loginApiUrl),
+        Uri.parse('$baseUrl/login'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode(<String, String>{
           'username': username,
-          'password': password,
+          'password': pin,
         }),
       );
 
       if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else if (response.statusCode == 400) {
-        return {'error': 'Invalid username or password'};
+        return jsonDecode(response.body); // Retorna el token JWT
+      } else if (response.statusCode == 403) {
+        return {'error': 'Cuenta no activada o PIN no configurado.'};
+      } else if (response.statusCode == 401) {
+        return {'error': 'PIN incorrecto.'};
       } else {
-        return {'error': 'An error occurred. Please try again later.'};
+        return {'error': 'Ocurrió un error. Intenta nuevamente más tarde.'};
       }
     } catch (e) {
       print('Exception: $e');
-      return {'error': 'Could not connect to the server. Please check your connection.'};
+      return {'error': 'No se pudo conectar al servidor. Verifica tu conexión.'};
     }
   }
 
-  // Método para hacer registro
-  Future<String?> register(String username, String password, String firstName, String lastName, String email, String phoneNumber, String referralCode) async {
+  // Método para registrar un nuevo usuario
+  Future<Map<String, dynamic>?> register(
+      String firstName, String lastName, String email, String phoneNumber, String referralCode) async {
     try {
       final response = await http.post(
-        Uri.parse(registerApiUrl),
+        Uri.parse(baseUrl),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode(<String, String>{
-          'username': username,
-          'password': password,
           'firstName': firstName,
           'lastName': lastName,
-          'email': email,                // Agregar email
+          'email': email,
           'phoneNumber': phoneNumber,
-          'referralCode': referralCode, // Agregar número de teléfono
+          'referralCode': referralCode,
         }),
       );
 
       if (response.statusCode == 200) {
-        return null; // Registro exitoso
+        final responseData = jsonDecode(response.body);
+        if (responseData.containsKey('token')) {
+          // Retornar el token y otros datos útiles de la respuesta
+          return {'token': responseData['token']};
+        } else {
+          return {'error': 'El servidor no devolvió un token.'};
+        }
       } else if (response.statusCode == 400) {
-        return 'Invalid data. Please check the input fields.';
+        return {'error': 'Datos inválidos. Verifica los campos ingresados.'};
       } else {
-        return 'An error occurred. Please try again later.';
+        return {'error': 'Ocurrió un error. Intenta nuevamente más tarde.'};
       }
     } catch (e) {
-      return 'Could not connect to the server. Please check your connection.';
+      return {'error': 'No se pudo conectar al servidor. Verifica tu conexión.'};
     }
   }
 
+  Future<Map<String, dynamic>?> getUserActivity(String userId, String token) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/user-activity/$userId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
 
+      if (response.statusCode == 200) {
+        print('User Activity Response: ${response.body}');
+        return jsonDecode(response.body);
+      } else {
+        print('Error fetching user activity: ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('Exception: $e');
+      return null;
+    }
+  }
 
-  // Método para guardar la clave secreta
+  // Método para configurar el PIN
   Future<String?> setPin(String token, String pin) async {
-    final response = await http.post(
-      Uri.parse('https://quips-backend-production.up.railway.app/api/users/setPin'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode(<String, String>{
-        'sixDigitPin': pin, // Ahora se envía el PIN dentro de un objeto JSON
-      }),
-    );
+    if (!RegExp(r'^\d{6}$').hasMatch(pin)) {
+      return 'El PIN debe ser un número de 6 dígitos.';
+    }
 
-    if (response.statusCode == 200) {
-      return null; // Éxito
-    } else {
-      return 'Error al configurar la clave';
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/setPin'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(<String, String>{
+          'sixDigitPin': pin,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return null; // Éxito
+      } else if (response.statusCode == 404) {
+        return 'Usuario no encontrado.';
+      } else {
+        return 'Error al configurar el PIN. Intenta nuevamente.';
+      }
+    } catch (e) {
+      print('Exception: $e');
+      return 'No se pudo conectar al servidor. Verifica tu conexión.';
     }
   }
 
@@ -91,48 +126,75 @@ class AuthService {
   Future<Map<String, dynamic>?> getUserInfo(String token) async {
     try {
       final response = await http.get(
-        Uri.parse(userInfoApiUrl),
+        Uri.parse('$baseUrl/me'),
         headers: {
           'Authorization': 'Bearer $token',
+          'Accept': 'application/json; charset=utf-8', // Asegura la codificación UTF-8
         },
       );
 
       if (response.statusCode == 200) {
-        print('User Info Response: ${response.body}');  // Imprimir los datos recibidos
-        return jsonDecode(response.body); // Retorna los datos del usuario
+        print('User Info Response: ${utf8.decode(response.bodyBytes)}');
+        return jsonDecode(utf8.decode(response.bodyBytes)); // Decodifica como UTF-8
       } else {
-        print('Error fetching user info: ${response.body}');  // Imprimir el error si ocurre
-        return {'error': 'Failed to fetch user info'};
+        print('Error fetching user info: ${utf8.decode(response.bodyBytes)}');
+        return {'error': 'Error al obtener información del usuario.'};
       }
     } catch (e) {
       print('Exception: $e');
-      return {'error': 'Could not connect to the server. Please check your connection.'};
+      return {'error': 'No se pudo conectar al servidor. Verifica tu conexión.'};
     }
   }
 
-  // Método para obtener los contactos registrados en el sistema
-  Future<List<dynamic>?> getRegisteredContacts(List<String> phoneNumbers) async {
-    print("Verificando contactos registrados: $phoneNumbers");
+  // Método para solicitar recuperación del PIN
+  Future<String?> resetPin(String email) async {
     try {
       final response = await http.post(
-        Uri.parse('https://quips-backend-production.up.railway.app/check'),
+        Uri.parse('$baseUrl/resetPin'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
-        body: jsonEncode(phoneNumbers),
+        body: jsonEncode(email),
       );
-      print("Cuerpo de la solicitud: ${jsonEncode(phoneNumbers)}");
-      print("Respuesta de verificación de contactos: ${response.statusCode}, Body: ${response.body}");
+
       if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+        return 'Si el correo existe, hemos enviado un enlace de restablecimiento.';
+      } else if (response.statusCode == 400) {
+        return 'Formato de correo inválido.';
       } else {
-        print("Error al obtener contactos registrados");
-        return null;
+        return 'Ocurrió un error. Intenta nuevamente más tarde.';
       }
     } catch (e) {
-      print("Excepción al obtener contactos registrados: $e");
-      return null;
+      print('Exception: $e');
+      return 'No se pudo conectar al servidor. Verifica tu conexión.';
     }
   }
 
+  // Método para confirmar el restablecimiento del PIN
+  Future<String?> confirmResetPin(String token, String newPin) async {
+    if (!RegExp(r'^\d{6}$').hasMatch(newPin)) {
+      return 'El PIN debe ser un número de 6 dígitos.';
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/confirmResetPin?token=$token'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(newPin),
+      );
+
+      if (response.statusCode == 200) {
+        return null; // Restablecimiento exitoso
+      } else if (response.statusCode == 400) {
+        return 'Token inválido o PIN incorrecto.';
+      } else {
+        return 'Error al restablecer el PIN.';
+      }
+    } catch (e) {
+      print('Exception: $e');
+      return 'No se pudo conectar al servidor. Verifica tu conexión.';
+    }
+  }
 }

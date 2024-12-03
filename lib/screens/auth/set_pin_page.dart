@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:quipsapp/screens/home/home_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quipsapp/services/auth_service.dart';
+import '../home/home_page.dart';
 
 class SetPinPage extends StatefulWidget {
   final String token;
@@ -75,7 +77,15 @@ class _SetPinPageState extends State<SetPinPage> {
                 final result = await _authService.setPin(widget.token, _pinController.text);
 
                 if (result == null) {
-                  Navigator.pushReplacementNamed(context, '/home');
+                  // Guardar el token en SharedPreferences
+                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                  await prefs.setString('jwtToken', widget.token);
+
+                  // Redirigir al Home
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => HomePage()),
+                  );
                 } else {
                   setState(() {
                     _errorMessage = result;

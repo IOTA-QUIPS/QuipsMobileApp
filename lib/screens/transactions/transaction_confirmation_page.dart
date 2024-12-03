@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'home_page.dart'; // Importa tu página de inicio aquí
+import '../home/home_page.dart'; // Importa tu página de inicio aquí
 
 class TransactionConfirmationPage extends StatelessWidget {
   final String receiverName;

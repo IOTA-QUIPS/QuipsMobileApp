@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'login_page.dart';
-import 'pin_login_page.dart'; // Importar la pantalla de ingreso con PIN
+import 'auth/login_page.dart';
+import 'auth/pin_login_page.dart'; // Importar la pantalla de ingreso con PIN
 
 class SplashScreen extends StatefulWidget {
   @override

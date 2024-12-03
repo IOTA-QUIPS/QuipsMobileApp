@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../services/chat_service.dart';
+import '../../services/chat_service.dart';
 
 class ChatPage extends StatefulWidget {
   final String senderId;

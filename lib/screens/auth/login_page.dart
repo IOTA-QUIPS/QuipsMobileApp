@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quipsapp/services/auth_service.dart';
-import '../admin/admin_home.dart';
-import 'home_page.dart';
+import '../../admin/admin_home.dart';
+import '../home/home_page.dart';
 import 'set_pin_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 

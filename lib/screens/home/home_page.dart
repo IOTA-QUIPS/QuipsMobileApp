@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:quipsapp/screens/contact_list_transaction_page.dart';
+import 'package:quipsapp/screens/transactions/contact_list_transaction_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quipsapp/services/auth_service.dart';
-import 'package:quipsapp/screens/transaction_page.dart';
-import 'package:quipsapp/screens/chat_list_page.dart';
+import 'package:quipsapp/screens/transactions/transaction_page.dart';
+import 'package:quipsapp/screens/chat/chat_list_page.dart';
 import 'package:quipsapp/services/news_service.dart';
 import 'package:quipsapp/model/news_model.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:quipsapp/services/inactivity_service.dart';
-import 'pin_login_page.dart';
-import 'news_detail_screen.dart'; // Importamos el nuevo screen
+import '../auth/pin_login_page.dart';
+import 'news_detail_screen.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -21,6 +21,7 @@ class _HomePageState extends State<HomePage> {
   String userName = "Loading...";
   String? userId;
   double balance = 0.0;
+  String activityLevel = "No Activo"; // Nivel de actividad predeterminado
   List<News> newsList = [];
   final AuthService _authService = AuthService();
   late NewsService _newsService;
@@ -31,6 +32,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _loadUserData();
     _loadNewsData();
+    _getUserActivityLevel();
     _inactivityService = InactivityService(
       timeoutInSeconds: 300,
       onInactivityDetected: _handleInactivity,
@@ -62,6 +64,7 @@ class _HomePageState extends State<HomePage> {
           userId = response['id'].toString();
           balance = response['coins'] != null ? response['coins'].toDouble() : 0.0;
         });
+        prefs.setBool('isActive', response['active']);
       } else {
         print('Error al cargar los datos del usuario');
       }
@@ -82,6 +85,21 @@ class _HomePageState extends State<HomePage> {
         });
       } catch (e) {
         print('Error al cargar las noticias: $e');
+      }
+    }
+  }
+
+  Future<void> _getUserActivityLevel() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('jwtToken');
+    if (token != null && userId != null) {
+      final response = await _authService.getUserActivity(userId!, token);
+      if (response != null && response.containsKey('nivelActividad')) {
+        setState(() {
+          activityLevel = response['nivelActividad'];
+        });
+      } else {
+        print('Error al obtener el nivel de actividad del usuario');
       }
     }
   }
@@ -122,6 +140,8 @@ class _HomePageState extends State<HomePage> {
               SizedBox(height: 20),
               _buildBalanceCard(localizations),
               SizedBox(height: 20),
+              _buildActivityIndicator(localizations), // Semáforo de actividad
+              SizedBox(height: 20),
               _buildActionButtons(localizations),
               SizedBox(height: 20),
               _buildNewsSection(localizations),
@@ -133,8 +153,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildHeader(AppLocalizations localizations) {
+    String firstName = userName.split(" ")[0];
+
     return Text(
-      '${localizations.hello} $userName',
+      '${localizations.hello} $firstName',
       style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.amber[300]),
     );
   }
@@ -169,6 +191,59 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _buildActivityIndicator(AppLocalizations localizations) {
+    Color activityColor;
+    switch (activityLevel) {
+      case "Activo":
+        activityColor = Colors.green;
+        break;
+      case "Normal":
+        activityColor = Colors.amber;
+        break;
+      default:
+        activityColor = Colors.red;
+    }
+
+    return Card(
+      color: Colors.grey[900],
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              localizations.activityLevel,
+              style: TextStyle(fontSize: 20, color: Colors.grey[400]),
+            ),
+            Row(
+              children: [
+                Container(
+                  width: 16,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: activityColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                SizedBox(width: 10),
+                Text(
+                  activityLevel,
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: activityColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildActionButtons(AppLocalizations localizations) {
     return Column(
       children: [
@@ -176,7 +251,11 @@ class _HomePageState extends State<HomePage> {
           text: localizations.makeTransaction,
           icon: Icons.monetization_on,
           gradientColors: [Colors.greenAccent, Colors.green],
-          onPressed: () {
+          onPressed: () async {
+            if (!await _isUserActive()) {
+              _showActivationDialog(context, localizations);
+              return;
+            }
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => ContactListTransactionPage()),
@@ -192,7 +271,11 @@ class _HomePageState extends State<HomePage> {
           text: localizations.chat,
           icon: FontAwesomeIcons.solidComments,
           gradientColors: [Colors.blueAccent, Colors.lightBlue],
-          onPressed: () {
+          onPressed: () async {
+            if (!await _isUserActive()) {
+              _showActivationDialog(context, localizations);
+              return;
+            }
             if (userId != null) {
               Navigator.push(
                 context,
@@ -206,42 +289,6 @@ class _HomePageState extends State<HomePage> {
           },
         ),
       ],
-    );
-  }
-
-  Widget _buildGradientButton({
-    required String text,
-    required IconData icon,
-    required List<Color> gradientColors,
-    required VoidCallback onPressed,
-  }) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(colors: gradientColors, begin: Alignment.topLeft, end: Alignment.bottomRight),
-        borderRadius: BorderRadius.circular(30),
-        boxShadow: [
-          BoxShadow(
-            color: gradientColors.last.withOpacity(0.5),
-            spreadRadius: 2,
-            blurRadius: 10,
-            offset: Offset(0, 3),
-          ),
-        ],
-      ),
-      child: ElevatedButton.icon(
-        icon: Icon(icon, color: Colors.black),
-        label: Text(
-          text,
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18),
-        ),
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          padding: EdgeInsets.symmetric(vertical: 16.0),
-        ),
-      ),
     );
   }
 
@@ -333,8 +380,8 @@ class _HomePageState extends State<HomePage> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => NewsDetailScreen(
-                        newsId: news.id, // Pasamos el ID de la noticia
-                        newsService: _newsService, // Pasamos el servicio de noticias
+                        newsId: news.id,
+                        newsService: _newsService,
                       ),
                     ),
                   );
@@ -344,6 +391,77 @@ class _HomePageState extends State<HomePage> {
           },
         ),
       ],
+    );
+  }
+
+  Future<bool> _isUserActive() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('isActive') ?? false;
+  }
+
+  void _showActivationDialog(BuildContext context, AppLocalizations localizations) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.grey[900],
+          title: Text(
+            localizations.accountNotActivated,
+            style: TextStyle(color: Colors.amber[300]),
+          ),
+          content: Text(
+            localizations.activateAccountPrompt,
+            style: TextStyle(color: Colors.white),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(
+                localizations.ok,
+                style: TextStyle(color: Colors.amber[300]),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildGradientButton({
+    required String text,
+    required IconData icon,
+    required List<Color> gradientColors,
+    required VoidCallback onPressed,
+  }) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: gradientColors, begin: Alignment.topLeft, end: Alignment.bottomRight),
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: gradientColors.last.withOpacity(0.5),
+            spreadRadius: 2,
+            blurRadius: 10,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: ElevatedButton.icon(
+        icon: Icon(icon, color: Colors.black),
+        label: Text(
+          text,
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18),
+        ),
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          padding: EdgeInsets.symmetric(vertical: 16.0),
+        ),
+      ),
     );
   }
 }
